@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 180, 83, 9;
+  --background-end-rgb: 251, 191, 36;
+  --background-end-edge-rgb: 171, 130, 23;
+  --highlight-start-rgb: 173, 28, 28;
+  --highlight-end-rgb: 128, 0, 28;
+  --text-glow-rgba: 244, 235, 100, 0.25;
+  --bulb-rgb: 125, 36, 6;
+  --footer-text-rgb: 140, 140, 140;
+  --footer-text-hover-rgb: 173, 28, 28;
+}
+
+.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 5, 25, 22;
+  --background-end-rgb: 0, 0, 0;
+  --highlight-start-rgb: 24, 117, 55;
+  --highlight-end-rgb: 10, 77, 32;
+  --text-glow-rgba: 10, 77, 32, 1;
+  --bulb-rgb: 244, 235, 100;
+  --footer-text-rgb: 80, 80, 80;
+  --footer-text-hover-rgb: 10, 77, 32;
+}
+
+.home-splash {
+  background: var(--background-end-rgb);
+  background: radial-gradient(at center, rgb(var(--background-end-rgb)) 60%, rgb(var(--background-end-edge-rgb)) 100%);
+}
+
+/* .lg\:home-splash-lg {
+  background: var(--background-end-rgb);
+  background: radial-gradient(
+      ellipse 30% 5% at 40% 80%,
+      rgb(var(--foreground-rgb)),
+      60%,
+      rgb(var(--background-start-rgb)),
+      90%,
+      transparent
+    ),
+    radial-gradient(at center, rgb(var(--background-end-rgb)) 60%, rgb(var(--background-end-edge-rgb)) 100%);
+} */
+
+@media (min-width: 1024px) {
+  .home-splash {
+    background: var(--background-end-rgb);
+    background: radial-gradient(
+        ellipse 30% 5% at 40% 80%,
+        rgb(var(--foreground-rgb)),
+        60%,
+        rgb(var(--background-start-rgb)),
+        90%,
+        transparent
+      ),
+      radial-gradient(at center, rgb(var(--background-end-rgb)) 60%, rgb(var(--background-end-edge-rgb)) 100%);
+  }
+}
