@@ -1,6 +1,5 @@
-import { MiniLoginForm } from './ui/login-form';
+import { LoginForm } from './ui/login-form';
 import { caprasimo } from './ui/fonts';
-import TestButton from './ui/dbTestButton';
 
 export default function Home() {
   return (
@@ -21,10 +20,9 @@ export default function Home() {
             <span className={`${caprasimo.className} text-lg`}>nuggets</span>.
           </p>
         </div>
-        {/* <TestButton></TestButton> */}
       </div>
       <div className='hidden md:block'>
-        <MiniLoginForm />
+        <LoginForm />
       </div>
     </main>
   );

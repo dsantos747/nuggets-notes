@@ -29,21 +29,8 @@
 
 .home-splash {
   background: var(--background-end-rgb);
-  background: radial-gradient(at center, rgb(var(--background-end-rgb)) 60%, rgb(var(--background-end-edge-rgb)) 100%);
+  background: radial-gradient(90% 90% at center, rgb(var(--background-end-rgb)) 60%, rgb(var(--background-end-edge-rgb)) 100%);
 }
-
-/* .lg\:home-splash-lg {
-  background: var(--background-end-rgb);
-  background: radial-gradient(
-      ellipse 30% 5% at 40% 80%,
-      rgb(var(--foreground-rgb)),
-      60%,
-      rgb(var(--background-start-rgb)),
-      90%,
-      transparent
-    ),
-    radial-gradient(at center, rgb(var(--background-end-rgb)) 60%, rgb(var(--background-end-edge-rgb)) 100%);
-} */
 
 @media (min-width: 1024px) {
   .home-splash {
@@ -56,6 +43,6 @@
         90%,
         transparent
       ),
-      radial-gradient(at center, rgb(var(--background-end-rgb)) 60%, rgb(var(--background-end-edge-rgb)) 100%);
+      radial-gradient(90% 90% at center, rgb(var(--background-end-rgb)) 60%, rgb(var(--background-end-edge-rgb)) 100%);
   }
 }
