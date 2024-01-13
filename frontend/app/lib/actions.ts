@@ -6,8 +6,10 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
 import { signIn } from '@/auth';
-import { InvoiceFormState, CustomerFormState } from '@/app/lib/types';
+import { InvoiceFormState, CustomerFormState, LoginFormData, SignUpFormData } from '@/app/lib/types';
 import postgres from 'postgres';
+import bcrypt from 'bcrypt';
+import { error } from 'console';
 
 const InvoiceFormSchema = z.object({
   id: z.string(),
@@ -39,6 +41,14 @@ const UpdateInvoice = InvoiceFormSchema.omit({ id: true, date: true });
 
 const CreateCustomer = CustomerFormSchema.omit({ id: true });
 const UpdateCustomer = CustomerFormSchema.omit({ id: true });
+
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL environment variable could not be resolved.');
+}
+
+const sql = postgres(databaseUrl, { ssl: 'require' });
 
 export async function createInvoice(prevState: InvoiceFormState, formData: FormData) {
   const validatedFields = CreateInvoice.safeParse({
@@ -170,9 +180,24 @@ export async function deleteCustomer(id: string) {
   //   }
 }
 
-export async function authenticate(prevState: string | undefined, formData: FormData) {
+// export async function authenticate(prevState: string | undefined, formData: FormData) {
+//   try {
+//     await signIn('credentials', formData);
+//   } catch (error) {
+//     if (error instanceof AuthError) {
+//       switch (error.type) {
+//         case 'CredentialsSignin':
+//           return 'Invalid credentials.';
+//         default:
+//           return 'Something went wrong.';
+//       }
+//     }
+//     throw error;
+//   }
+// }
+export async function authenticate(email: string, password: string) {
   try {
-    await signIn('credentials', formData);
+    await signIn('credentials', { email, password });
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -186,36 +211,66 @@ export async function authenticate(prevState: string | undefined, formData: Form
   }
 }
 
-export async function DbTest() {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    throw new Error('DATABASE_URL environment variable could not be resolved.');
+export async function login(prevState: string | undefined, formData: FormData) {
+  const email = formData.get('email')?.toString();
+  const password = formData.get('password')?.toString();
+  if (!email || !password) {
+    throw new Error('Invalid Form data');
   }
+  await authenticate(email, password);
+  // const authenticationError = await authenticate(email, password);
 
-  const sql = postgres(databaseUrl, { ssl: 'require' });
-  console.log('a');
+  // if (authenticationError) {
+  //   console.log(authenticationError);
+  //   if (authenticationError instanceof AuthError) {
+  //     switch (authenticationError.type) {
+  //       case 'CredentialsSignin':
+  //         return 'Invalid credentials.';
+  //       default:
+  //         return 'Something went wrong.';
+  //     }
+  //   }
+  //   return 'Failed to log in.';
+  // }
+}
+
+// try {
+// const { email, password } = formData;
+
+// } catch (error) {
+// if (error instanceof AuthError) {
+//   switch (error.type) {
+//     case 'CredentialsSignin':
+//       return 'Invalid credentials.';
+//     default:
+//       return 'Something went wrong.';
+//   }
+// }
+// console.log(error);
+// return 'Failed to log in.'; // This one is getting triggered
+// }
+
+export async function signUp(prevState: string | undefined, formData: FormData) {
   try {
-    await sql`
-      CREATE TABLE test(id SERIAL PRIMARY KEY, name TEXT NOT NULL)
-      INSERT INTO test(name) VALUES ("Andy"),("Brenda"),("Charlie")
-      `;
-    const res = await sql`
-    SELECT version()
-      `;
-    console.log(res);
+    // const { name, email, password } = formData;
+    const name = formData.get('name')?.toString();
+    const email = formData.get('email')?.toString();
+    const password = formData.get('password')?.toString();
+
+    if (!name || !email || !password) {
+      throw new Error('Invalid Form data');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const existingUser = await sql`SELECT id FROM users WHERE email = ${email}`;
+    if (existingUser.length > 0) {
+      return 'User with this email already exists. Try logging in.';
+    }
+    await sql`INSERT INTO users(name, email, password_hashed) VALUES (${name}, ${email}, ${hashedPassword})`;
+
+    await authenticate(email, password);
   } catch (error) {
-    console.error('Failed to create table:', error);
-    throw new Error('Failed to create table.');
-  }
-  try {
-    const testVals = await sql`
-        SELECT * FROM test;
-        `;
-    const testVal = testVals[0];
-    console.log(testVal);
-  } catch (error) {
-    console.error('Failed to create table:', error);
-    throw new Error('Failed to create table.');
+    return 'Sign-up error: Failed to create account.';
   }
 }

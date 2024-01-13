@@ -5,11 +5,11 @@ import { AtSymbolIcon, KeyIcon, UserIcon, ExclamationCircleIcon } from '@heroico
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
 import { useFormState, useFormStatus } from 'react-dom';
-import { authenticate } from '@/app/lib/actions';
+import { login, signUp } from '@/app/lib/actions';
 import Link from 'next/link';
 
 export function LoginForm() {
-  const [errorMessage, dispatch] = useFormState(authenticate, undefined);
+  const [errorMessage, dispatch] = useFormState(login, undefined);
   return (
     <form action={dispatch} className='space-y-3'>
       <div className='flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8 min-w-64'>
@@ -70,7 +70,7 @@ export function LoginForm() {
 }
 
 export function SignUpForm() {
-  const [errorMessage, dispatch] = useFormState(authenticate, undefined);
+  const [errorMessage, dispatch] = useFormState(signUp, undefined);
   return (
     <form action={dispatch} className='space-y-3'>
       <div className='flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8 min-w-64'>

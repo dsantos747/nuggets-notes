@@ -20,8 +20,8 @@ export const authConfig = {
   },
   providers: [
     GoogleProvider({
-      clientId: process.env.TWITTER_ID,
-      clientSecret: process.env.TWITTER_SECRET,
+      clientId: process.env.GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_SECRET,
     }),
   ],
 } satisfies NextAuthConfig;
