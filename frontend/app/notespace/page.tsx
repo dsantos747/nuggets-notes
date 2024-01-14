@@ -1,11 +1,15 @@
-import { signOut } from '@/auth';
+import { signOut, auth } from '@/auth';
 
 type Props = {};
 
-function NotespacePage({}: Props) {
+async function NotespacePage({}: Props) {
+  const authStatus = await auth();
+
   return (
     <div>
-      This is the big notespace page. Make it look good!
+      <p>This is the big notespace page. Make it look good!</p>
+      {/* <WelcomeUser/> */}
+      <p>Hello, {authStatus?.user?.name ?? 'Guest'}!</p>
       <form
         action={async () => {
           'use server';
