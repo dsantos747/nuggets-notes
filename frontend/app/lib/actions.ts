@@ -9,7 +9,7 @@ import { signIn } from '@/auth';
 import { InvoiceFormState, CustomerFormState, LoginFormData, SignUpFormData } from '@/app/lib/types';
 import postgres from 'postgres';
 import bcrypt from 'bcrypt';
-import { error } from 'console';
+import { isRedirectError } from 'next/dist/client/components/redirect';
 
 const InvoiceFormSchema = z.object({
   id: z.string(),
@@ -180,24 +180,9 @@ export async function deleteCustomer(id: string) {
   //   }
 }
 
-// export async function authenticate(prevState: string | undefined, formData: FormData) {
-//   try {
-//     await signIn('credentials', formData);
-//   } catch (error) {
-//     if (error instanceof AuthError) {
-//       switch (error.type) {
-//         case 'CredentialsSignin':
-//           return 'Invalid credentials.';
-//         default:
-//           return 'Something went wrong.';
-//       }
-//     }
-//     throw error;
-//   }
-// }
-export async function authenticate(email: string, password: string) {
+export async function login(prevState: string | undefined, formData: FormData) {
   try {
-    await signIn('credentials', { email, password });
+    await signIn('credentials', formData);
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -207,70 +192,36 @@ export async function authenticate(email: string, password: string) {
           return 'Something went wrong.';
       }
     }
-    throw error;
+    if (isRedirectError(error)) {
+      revalidatePath('/notespace');
+      redirect('/notespace');
+    }
+    return 'Failed to log in.';
   }
 }
-
-export async function login(prevState: string | undefined, formData: FormData) {
-  const email = formData.get('email')?.toString();
-  const password = formData.get('password')?.toString();
-  if (!email || !password) {
-    throw new Error('Invalid Form data');
-  }
-  await authenticate(email, password);
-  // const authenticationError = await authenticate(email, password);
-
-  // if (authenticationError) {
-  //   console.log(authenticationError);
-  //   if (authenticationError instanceof AuthError) {
-  //     switch (authenticationError.type) {
-  //       case 'CredentialsSignin':
-  //         return 'Invalid credentials.';
-  //       default:
-  //         return 'Something went wrong.';
-  //     }
-  //   }
-  //   return 'Failed to log in.';
-  // }
-}
-
-// try {
-// const { email, password } = formData;
-
-// } catch (error) {
-// if (error instanceof AuthError) {
-//   switch (error.type) {
-//     case 'CredentialsSignin':
-//       return 'Invalid credentials.';
-//     default:
-//       return 'Something went wrong.';
-//   }
-// }
-// console.log(error);
-// return 'Failed to log in.'; // This one is getting triggered
-// }
 
 export async function signUp(prevState: string | undefined, formData: FormData) {
   try {
-    // const { name, email, password } = formData;
     const name = formData.get('name')?.toString();
     const email = formData.get('email')?.toString();
     const password = formData.get('password')?.toString();
-
     if (!name || !email || !password) {
+      // TS requires to ensure type is not undefined
       throw new Error('Invalid Form data');
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const existingUser = await sql`SELECT id FROM users WHERE email = ${email}`;
     if (existingUser.length > 0) {
-      return 'User with this email already exists. Try logging in.';
+      return 'Existing user found - try logging in.';
     }
     await sql`INSERT INTO users(name, email, password_hashed) VALUES (${name}, ${email}, ${hashedPassword})`;
 
-    await authenticate(email, password);
+    await signIn('credentials', { email, password });
   } catch (error) {
+    if (isRedirectError(error)) {
+      revalidatePath('/notespace');
+      redirect('/notespace');
+    }
     return 'Sign-up error: Failed to create account.';
   }
 }
