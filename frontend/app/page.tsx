@@ -5,7 +5,7 @@ import Modal from './ui/modal';
 
 export default function Home() {
   return (
-    <main className='home-splash flex min-h-screen flex-col lg:flex-row items-center px-20 md:px-28 lg:px-40 xl:px-48 py-24 gap-16'>
+    <main className='home-splash flex min-h-screen flex-col lg:flex-row items-center lg:justify-between px-20 md:px-28 lg:px-40 xl:px-48 py-24 gap-16'>
       <div className='max-w-4xl'>
         <h1 className={`${caprasimo.className} text-4xl lg:text-6xl text-amber-700`}>nuggets.com</h1>
         <h3 className='my-4'>

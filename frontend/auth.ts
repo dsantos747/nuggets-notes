@@ -2,7 +2,8 @@ import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
-import type { User } from '@/app/lib/types';
+import type { User as DbUser } from '@/app/lib/types'; // To avoid confusion with type User from NextAuth
+// import type { User } from 'next-auth';
 import bcrypt from 'bcrypt';
 import postgres from 'postgres';
 
@@ -14,10 +15,9 @@ if (!databaseUrl) {
 
 const sql = postgres(databaseUrl, { ssl: 'require' });
 
-async function getUser(email: string): Promise<User | undefined> {
+async function getUser(email: string): Promise<DbUser | undefined> {
   try {
-    const users: User[] = await sql`SELECT * FROM users WHERE email=${email}`;
-    // const user: User | undefined = users[0];
+    const users: DbUser[] = await sql`SELECT * FROM users WHERE email=${email}`;
     return users[0];
   } catch (error) {
     console.error('Failed to fetch user:', error);
@@ -38,6 +38,8 @@ export const { auth, signIn, signOut } = NextAuth({
           if (!user) return null;
           const passwordsMatch = await bcrypt.compare(password, user.password_hashed);
           if (passwordsMatch) {
+            // const formattedUser: User = { id: user.id, name: user.name, email: user.email, image: null };
+            // return formattedUser;
             return user;
           }
         }

@@ -65,7 +65,7 @@
   height: 100%;
   background: radial-gradient(170% 100% at 50% 30%, transparent 60%, rgba(var(--background-end-edge-rgb), 0.8) 100%),
     radial-gradient(ellipse 140% 150% at 30% 50%, rgba(76, 0, 255, 0.15), transparent);
-  animation: pulseOpacity 5s infinite alternate; /* Adjust the duration as needed */
+  animation: pulseOpacity 8s infinite alternate; /* Adjust the duration as needed */
 }
 
 @keyframes pulseOpacity {

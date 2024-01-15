@@ -36,8 +36,8 @@ async function seedNotes(sql, defaultUserId) {
   try {
     await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
     await sql`CREATE TABLE IF NOT EXISTS notes (
-        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-        user_id UUID,
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
+        user_id UUID NOT NULL,
         title VARCHAR(255),
         text TEXT NOT NULL,
         date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

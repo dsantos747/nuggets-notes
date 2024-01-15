@@ -17,6 +17,20 @@ export const authConfig = {
       }
       return true;
     },
+    async session({ session, user, token }) {
+      if (token?.sub) {
+        if (session.user) {
+          session.user = {
+            id: token.sub,
+            name: token.name,
+            email: token.email,
+            image: token.picture,
+            // id: session.user.id,
+          };
+        }
+      }
+      return session;
+    },
   },
   providers: [
     GoogleProvider({
