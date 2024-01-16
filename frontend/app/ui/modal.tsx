@@ -1,14 +1,16 @@
 'use client';
 
-import { QuestionMarkCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect, useRef } from 'react';
 
 type Props = {
   readonly icon: string;
+  readonly iconClasses: string;
+  readonly buttonPosClasses: string;
   readonly children: React.ReactNode;
 };
 
-export default function Modal({ icon, children }: Props) {
+export default function Modal({ icon, iconClasses, buttonPosClasses, children }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const divRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -29,11 +31,12 @@ export default function Modal({ icon, children }: Props) {
     <div>
       <button
         ref={buttonRef}
-        className='absolute top-5 left-5'
+        className={buttonPosClasses}
         onClick={() => {
           setModalOpen(!modalOpen);
         }}>
-        {icon === 'question' && <QuestionMarkCircleIcon className='h-7 w-7 text-orange-900 hover:text-black' />}
+        {icon === 'question' && <QuestionMarkCircleIcon className={iconClasses} />}
+        {icon === 'plus' && <PlusIcon className={iconClasses} />}
       </button>
       {modalOpen && (
         <div className='absolute z-10 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-screen h-screen backdrop-blur-sm transition-opacity duration-700 ease-in-out'>

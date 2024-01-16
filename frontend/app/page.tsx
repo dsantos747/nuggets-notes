@@ -1,4 +1,4 @@
-import { LoginForm } from './ui/login-form';
+import { LoginForm } from './ui/authForm';
 import { caprasimo } from './ui/fonts';
 import Link from 'next/link';
 import Modal from './ui/modal';
@@ -19,7 +19,7 @@ export default function Home() {
             Sign Up
           </Link>
         </div>
-        <Modal icon='question'>
+        <Modal icon='question' iconClasses='h-7 w-7 text-orange-900 hover:text-black' buttonPosClasses='absolute top-5 left-5'>
           <p>
             Ever needed to just jot something down quickly? Without worrying about where it was, and if you'd be able to find it afterwards?
           </p>

@@ -1,14 +1,8 @@
 import postgres from 'postgres';
 import { Note, NoteWithTags, NotesTable, User } from './types';
 import { unstable_noStore as noStore } from 'next/cache';
-
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-  throw new Error('DATABASE_URL environment variable could not be resolved.');
-}
-
-const sql = postgres(databaseUrl, { ssl: 'require' });
+import { unstable_cache as doCache } from 'next/cache';
+import sql from './db';
 
 type NoteTag = Note & {
   tag_name: string;
@@ -42,7 +36,7 @@ const parseNoteTags = (notes: NoteTag[]) => {
 };
 
 export async function fetchLatestNotes(limit: number, user_id: string) {
-  noStore();
+  console.log('Fetching latest notes');
   try {
     const latestNotes = await sql<NoteTag[]>`
         WITH latest_notes AS (

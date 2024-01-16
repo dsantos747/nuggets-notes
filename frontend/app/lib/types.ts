@@ -1,5 +1,3 @@
-// import { UUID } from 'crypto';
-
 export type User = {
   id: string;
   name: string;

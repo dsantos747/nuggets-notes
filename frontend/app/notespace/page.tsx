@@ -1,40 +1,33 @@
-import { signOut, auth } from '@/auth';
+import { auth } from '@/auth';
 import { fetchLatestNotes } from '../lib/data';
 import { NoteWithTags } from '../lib/types';
+import CreateNoteForm from '../ui/note/noteForm';
+import { unstable_cache } from 'next/cache';
+import Modal from '../ui/modal';
+import NoteCloud from '../ui/notespace/noteCloud';
 
 type Props = {};
 
 async function NotespacePage({}: Props) {
   const authStatus = await auth();
-  let latestNotes;
+  let latestNotes: NoteWithTags[] = [];
+  const numberOfNotes = 10;
+
   if (typeof authStatus?.user?.id === 'string') {
-    /**
-     * NOTE: During development, substitute this with a dummy array of notes, to save on Neon postgres compute time.
-     */
-    latestNotes = await fetchLatestNotes(5, authStatus.user.id);
+    // Cache incorporated to prevent db call on EVERY page reload
+    const getCachedLatestNotes = unstable_cache(async (n, id) => fetchLatestNotes(n, id), undefined, { tags: ['latestNotes'] });
+    latestNotes = await getCachedLatestNotes(numberOfNotes, authStatus.user.id);
   }
 
   return (
-    <div>
+    <div className='relative z-10 text-center'>
       <p>Hello, {authStatus?.user?.name ?? 'Guest'}!</p>
-      <form
-        action={async () => {
-          'use server';
-          await signOut();
-        }}>
-        <button type='submit'>Sign Out</button>
-      </form>
-      {latestNotes?.map((note: NoteWithTags) => {
-        return (
-          <div key={note.id} className='p-4 bg-white bg-opacity-30 w-max border-2 border-solid border-white rounded-md max-w-64 scale-75'>
-            <h3>{note.title}</h3>
-            <p>{note.text}</p>
-            {note.tags.map((tag: string, id: number) => {
-              return <span key={id}>{tag}</span>;
-            })}
-          </div>
-        );
-      })}
+      <NoteCloud notes={latestNotes}></NoteCloud>
+      {/* <SearchBar></SearchBar> */}
+      <div>A nice big searchbar will go here</div>
+      <Modal icon='plus' iconClasses='h-20 w-20 text-orange-900 hover:text-black' buttonPosClasses=''>
+        <CreateNoteForm></CreateNoteForm>
+      </Modal>
     </div>
   );
 }

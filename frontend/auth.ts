@@ -5,15 +5,7 @@ import { z } from 'zod';
 import type { User as DbUser } from '@/app/lib/types'; // To avoid confusion with type User from NextAuth
 // import type { User } from 'next-auth';
 import bcrypt from 'bcrypt';
-import postgres from 'postgres';
-
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-  throw new Error('DATABASE_URL environment variable could not be resolved.');
-}
-
-const sql = postgres(databaseUrl, { ssl: 'require' });
+import sql from './app/lib/db';
 
 async function getUser(email: string): Promise<DbUser | undefined> {
   try {

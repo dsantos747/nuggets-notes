@@ -1,218 +1,233 @@
 'use server';
 
 import { z } from 'zod';
-// import { sql } from '@vercel/postgres';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
-import { signIn } from '@/auth';
-import { InvoiceFormState, CustomerFormState, LoginFormData, SignUpFormData } from '@/app/lib/types';
-import postgres from 'postgres';
+import { signIn, auth } from '@/auth';
+import { NoteFormState, Note } from '@/app/lib/types';
 import bcrypt from 'bcrypt';
 import { isRedirectError } from 'next/dist/client/components/redirect';
+import sql from './db';
 
-const InvoiceFormSchema = z.object({
+const NoteFormSchema = z.object({
   id: z.string(),
-  customerId: z.string({
-    invalid_type_error: 'Please select a customer.',
+  user_id: z.string(),
+  title: z.string(),
+  text: z.string({
+    invalid_type_error: 'Please enter some text.',
   }),
-  amount: z.coerce.number().gt(0, { message: 'Please enter an amount greater than $0.' }),
-  status: z.enum(['pending', 'paid'], {
-    invalid_type_error: 'Please select an invoice status.',
-  }),
-  date: z.string(),
+  date_created: z.coerce.date(),
+  date_modified: z.coerce.date(),
+  // tags: z.array(z.object({ value: z.string() })),
+  tags: z.unknown(z.string()),
 });
 
-const CustomerFormSchema = z.object({
+const AuthFormSchema = z.object({
   id: z.string(),
   name: z.string({
-    invalid_type_error: 'Please enter a valid customer name.',
+    invalid_type_error: 'Please enter your name.',
   }),
   email: z.string({
     invalid_type_error: 'Please enter a valid email.',
   }),
-  imageUrl: z.string({
-    invalid_type_error: 'Please enter a valid image url.',
+  password: z.string({
+    invalid_type_error: 'Please enter a valid password.',
+  }),
+  confirmPassword: z.string({
+    invalid_type_error: 'Please enter the same password.',
   }),
 });
 
-const CreateInvoice = InvoiceFormSchema.omit({ id: true, date: true });
-const UpdateInvoice = InvoiceFormSchema.omit({ id: true, date: true });
+const CreateNote = NoteFormSchema.omit({ id: true, user_id: true, date_created: true, date_modified: true });
+const UpdateNote = NoteFormSchema.omit({ id: true, user_id: true, date_created: true, date_modified: true });
 
-const CreateCustomer = CustomerFormSchema.omit({ id: true });
-const UpdateCustomer = CustomerFormSchema.omit({ id: true });
+const Login = AuthFormSchema.omit({ id: true, name: true, confirmPassword: true, tags: true });
+const SignUp = AuthFormSchema.omit({ id: true });
 
-const databaseUrl = process.env.DATABASE_URL;
+export async function createNote(prevState: NoteFormState | undefined, formData: FormData) {
+  // console.log(formData);
+  const authStatus = await auth();
+  const user_id = authStatus?.user?.id;
+  if (typeof user_id !== 'string') {
+    return { message: 'Could not authorise user.' };
+  }
 
-if (!databaseUrl) {
-  throw new Error('DATABASE_URL environment variable could not be resolved.');
-}
-
-const sql = postgres(databaseUrl, { ssl: 'require' });
-
-export async function createInvoice(prevState: InvoiceFormState, formData: FormData) {
-  const validatedFields = CreateInvoice.safeParse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
+  const validatedFields = CreateNote.safeParse({
+    title: formData.get('title'),
+    text: formData.get('text'),
   });
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Invoice',
+      message: 'Missing Fields. Failed to Create Note',
     };
   }
-  const { customerId, amount, status } = validatedFields.data;
-  const amountInCents = amount * 100;
-  const date = new Date().toISOString().split('T')[0];
-  //   try {
-  //     await sql`
-  //   INSERT INTO invoices (customer_id, amount, status, date)
-  //   VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-  //   `;
-  //   } catch (error) {
-  //     return { message: 'Database Error: Failed to Create Invoice' };
-  //   }
-  revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
+  const { title, text } = validatedFields.data;
+
+  // Handle errors in this?
+  const tagEntries = Array.from(formData.entries()).filter(([name]) => name === 'tags');
+  const tags = tagEntries.map(([, value]) => value.toString());
+  // return { message: 'test' };
+
+  try {
+    await sql.begin(async (sql) => {
+      const newNote: Note[] = await sql`
+        INSERT INTO notes (user_id, title, text, date_created, date_modified)
+        VALUES (${user_id}, ${title}, ${text}, NOW(), NOW())
+        RETURNING *
+      `;
+
+      const noteId = newNote[0].id;
+      const tagsObj = tags.map((tag) => ({ name: tag, user_id: user_id, manual: 'true' }));
+
+      await sql`INSERT INTO tags
+        ${sql(tagsObj, 'name', 'user_id', 'manual')}
+        ON CONFLICT (name, user_id) DO NOTHING
+      `;
+
+      await sql`
+        INSERT INTO notes_tags (note_id, tag_id)
+        SELECT ${noteId}, tags.id
+        FROM tags
+        WHERE tags.name = ANY(${tags})
+      `;
+
+      console.log('Note created successfully! ID:', noteId);
+    });
+  } catch (error) {
+    console.log(error);
+    return { message: 'Database Error: Failed to Create Note' };
+  }
+  revalidatePath('/notespace');
+  revalidateTag('latestNotes');
+  // redirect('/notespace');
 }
 
-export async function updateInvoice(id: string, prevState: InvoiceFormState, formData: FormData) {
-  const validatedFields = UpdateInvoice.safeParse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Update Invoice.',
-    };
+// export async function updateInvoice(id: string, prevState: NoteFormState, formData: FormData) {
+//   const validatedFields = UpdateInvoice.safeParse({
+//     customerId: formData.get('customerId'),
+//     amount: formData.get('amount'),
+//     status: formData.get('status'),
+//   });
+//   if (!validatedFields.success) {
+//     return {
+//       errors: validatedFields.error.flatten().fieldErrors,
+//       message: 'Missing Fields. Failed to Update Invoice.',
+//     };
+//   }
+
+//   const { customerId, amount, status } = validatedFields.data;
+//   const amountInCents = amount * 100;
+//     try {
+//       await sql`
+//       UPDATE invoices
+//       SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+//       WHERE id = ${id}
+//     `;
+//     } catch (error) {
+//       return { message: 'Database Error: Failed to Update Invoice' };
+//     }
+//   revalidatePath('/dashboard/invoices');
+//   redirect('/dashboard/invoices');
+// }
+
+export async function deleteNote(id: string) {
+  /**
+   * The setting of user_id here, rather than as passed through as an argument, is to avoid having
+   * the user_id present on the client. However, it will add an additional performance hit. Once frontend
+   * structure is fully set up, consider if it is safe to move user_id to the point of requesting (i.e.,
+   * if we always make the request from a server-side component (not client))
+   */
+  const authStatus = await auth();
+  const user_id = authStatus?.user?.id;
+  if (typeof user_id !== 'string') {
+    return { message: 'Could not authorise user.' };
   }
 
-  const { customerId, amount, status } = validatedFields.data;
-  const amountInCents = amount * 100;
-  //   try {
-  //     await sql`
-  //     UPDATE invoices
-  //     SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-  //     WHERE id = ${id}
-  //   `;
-  //   } catch (error) {
-  //     return { message: 'Database Error: Failed to Update Invoice' };
-  //   }
-  revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
-}
+  try {
+    await sql.begin(async (sql) => {
+      // Delete any entries in notes_tags related to this note
+      await sql`DELETE FROM notes_tags WHERE note_id = ${id}`;
 
-export async function deleteInvoice(id: string) {
-  // throw new Error('Failed to Delete Invoice');
-  //   try {
-  //     await sql`DELETE FROM invoices WHERE id = ${id}`;
-  //     revalidatePath('/dashboard/invoices');
-  //     return { message: 'Deleted Invoice' };
-  //   } catch (error) {
-  //     return { message: 'Database Error: Failed to Delete Invoice' };
-  //   }
-}
+      // Delete note
+      await sql`DELETE FROM notes WHERE id = ${id}`;
 
-export async function createCustomer(prevState: CustomerFormState, formData: FormData) {
-  const validatedFields = CreateCustomer.safeParse({
-    name: formData.get('name'),
-    email: formData.get('email'),
-    imageUrl: '/customers/emil-kowalski.png', //formData.get('imageUrl'),
-  });
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Customer',
-    };
+      // Delete tags if their id is not present in notes_tags, for note_id's filtered to user.
+      await sql`
+        DELETE FROM tags
+        WHERE id NOT IN (
+          SELECT DISTINCT tag_id
+          FROM notes_tags
+          WHERE note_id IN (
+            SELECT id
+            FROM notes
+            WHERE user_id = ${user_id}
+          )
+        )
+      `;
+      revalidatePath('/notespace');
+      revalidateTag('latestNotes');
+      return { message: 'Deleted Note' };
+    });
+  } catch (error) {
+    console.log(error);
+    return { message: 'Database Error: Failed to Delete Note' };
   }
-  const { name, email, imageUrl } = validatedFields.data;
-  //   try {
-  //     await sql`
-  //   INSERT INTO customers (name, email, image_url)
-  //   VALUES (${name}, ${email}, ${imageUrl})
-  //   `;
-  //   } catch (error) {
-  //     return { message: 'Database Error: Failed to Create Customer' };
-  //   }
-  revalidatePath('/dashboard/customers');
-  redirect('/dashboard/customers');
 }
 
-export async function updateCustomer(id: string, prevState: CustomerFormState, formData: FormData) {
-  const validatedFields = UpdateCustomer.safeParse({
-    name: formData.get('name'),
-    email: formData.get('email'),
-    image_url: '/customers/emil-kowalski.png', //formData.get('imageUrl'),
-  });
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Update Customer.',
-    };
-  }
-
-  const { name, email, imageUrl } = validatedFields.data;
-  //   try {
-  //     await sql`
-  //     UPDATE customers
-  //     SET name = ${name}, email = ${email}, image_url = ${imageUrl}
-  //     WHERE id = ${id}
-  //   `;
-  //   } catch (error) {
-  //     return { message: 'Database Error: Failed to Update Customer' };
-  //   }
-  revalidatePath('/dashboard/customers');
-  redirect('/dashboard/customers');
-}
-
-export async function deleteCustomer(id: string) {
-  // throw new Error('Failed to Delete Customer');
-  //   try {
-  //     await sql`DELETE FROM invoices WHERE customer_id = ${id}`; /////////// NEED TO DELETE ALL ASSOCIATED INVOICES
-  //     await sql`DELETE FROM customers WHERE id = ${id}`;
-  //     revalidatePath('/dashboard/customers');
-  //     return { message: 'Deleted Customer' };
-  //   } catch (error) {
-  //     return { message: 'Database Error: Failed to Delete Customer' };
-  //   }
-}
-
-export async function login(prevState: string | undefined, formData: FormData) {
+export async function login(prevState: { message: string } | undefined, formData: FormData) {
   try {
     await signIn('credentials', formData);
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
-          return 'Invalid credentials.';
+          return { message: 'Invalid credentials.' };
         default:
-          return 'Something went wrong.';
+          return { message: 'Something went wrong.' };
       }
     }
     if (isRedirectError(error)) {
       revalidatePath('/notespace');
       redirect('/notespace');
     }
-    return 'Failed to log in.';
+    return { message: 'Failed to log in.' };
   }
 }
 
-export async function signUp(prevState: string | undefined, formData: FormData) {
+export async function signUp(prevState: { message: string } | undefined, formData: FormData) {
   try {
-    const name = formData.get('name')?.toString();
-    const email = formData.get('email')?.toString();
-    const password = formData.get('password')?.toString();
-    if (!name || !email || !password) {
-      // TS requires to ensure type is not undefined
-      throw new Error('Invalid Form data');
+    // const name = formData.get('name')?.toString();
+    // const email = formData.get('email')?.toString();
+    // const password = formData.get('password')?.toString();
+    // const confirmPassword = formData.get('confirmPassword')?.toString();
+    // if (!name || !email || !password || !confirmPassword) {
+    //   // TS requires to ensure type is not undefined
+    //   throw new Error('Invalid Form data.');
+    // }
+
+    const validatedFields = SignUp.safeParse({
+      name: formData.get('name'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+      confirmPassword: formData.get('confirmPassword'),
+    });
+    if (!validatedFields.success) {
+      return {
+        errors: validatedFields.error.flatten().fieldErrors,
+        message: 'Missing Fields. Failed to Update Invoice.',
+      };
+    }
+    const { name, email, password, confirmPassword } = validatedFields.data;
+
+    if (password !== confirmPassword) {
+      return { message: 'Passwords do not match.' };
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const existingUser = await sql`SELECT id FROM users WHERE email = ${email}`;
     if (existingUser.length > 0) {
-      return 'Existing user found - try logging in.';
+      return { message: 'Existing user found - try logging in.' };
     }
     await sql`INSERT INTO users(name, email, password_hashed) VALUES (${name}, ${email}, ${hashedPassword})`;
 
@@ -222,6 +237,6 @@ export async function signUp(prevState: string | undefined, formData: FormData) 
       revalidatePath('/notespace');
       redirect('/notespace');
     }
-    return 'Sign-up error: Failed to create account.';
+    return { message: 'Sign-up error: Failed to create account.' };
   }
 }

@@ -64,21 +64,29 @@ async function seedNotes(sql, defaultUserId) {
   }
 }
 
-async function seedTags(sql) {
+/**
+ * "Manual" serves to differentiate between tags visible to the user, and potential
+ * future ai-generated "under-the-hood" tags to help with search.
+ */
+async function seedTags(sql, defaultUserId) {
   try {
     await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
     await sql`CREATE TABLE IF NOT EXISTS tags (
         id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-        name VARCHAR(255) UNIQUE
+        name VARCHAR(255),
+        user_id UUID NOT NULL,
+        manual BOOL DEFAULT true NOT NULL,
+        CONSTRAINT unique_name_user_id UNIQUE (name, user_id)
     );
     `;
     console.log(`Created "tags" table`);
 
     const tag_id = uuidv4();
     const name = 'Test Tag';
+    const user_id = defaultUserId;
     await sql`
-    INSERT INTO tags (id, name)
-    VALUES (${tag_id},${name})
+    INSERT INTO tags (id, name, user_id)
+    VALUES (${tag_id},${name},${user_id})
     ON CONFLICT (id) DO NOTHING
     `;
     console.log(`Seeded tag ${name}`);
@@ -132,7 +140,7 @@ async function main() {
 
     const defaultUserId = await seedUsers(sql);
     const defaultNoteId = await seedNotes(sql, defaultUserId);
-    const defaultTagId = await seedTags(sql);
+    const defaultTagId = await seedTags(sql, defaultUserId);
     await seedNoteTags(sql, defaultNoteId, defaultTagId);
   } finally {
     await sql.end();
