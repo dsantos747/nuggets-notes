@@ -1,10 +1,11 @@
 import { auth } from '@/auth';
 import { fetchLatestNotes } from '../lib/data';
 import { NoteWithTags } from '../lib/types';
-import CreateNoteForm from '../ui/note/noteForm';
+import NoteForm from '../ui/note/noteForm';
 import { unstable_cache } from 'next/cache';
 import Modal from '../ui/modal';
 import NoteCloud from '../ui/notespace/noteCloud';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 type Props = {};
 
@@ -20,13 +21,13 @@ async function NotespacePage({}: Props) {
   }
 
   return (
-    <div className='relative z-10 text-center'>
+    <div className='relative text-center'>
       <p>Hello, {authStatus?.user?.name ?? 'Guest'}!</p>
       <NoteCloud notes={latestNotes}></NoteCloud>
       {/* <SearchBar></SearchBar> */}
       <div>A nice big searchbar will go here</div>
-      <Modal icon='plus' iconClasses='h-20 w-20 text-orange-900 hover:text-black' buttonPosClasses=''>
-        <CreateNoteForm></CreateNoteForm>
+      <Modal modalContentComponent={<NoteForm></NoteForm>}>
+        <PlusIcon className='h-7 w-7 text-orange-900 hover:text-black'></PlusIcon>
       </Modal>
     </div>
   );

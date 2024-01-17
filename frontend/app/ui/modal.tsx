@@ -1,48 +1,57 @@
 'use client';
 
-import { QuestionMarkCircleIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect, useRef } from 'react';
 
 type Props = {
-  readonly icon: string;
-  readonly iconClasses: string;
-  readonly buttonPosClasses: string;
+  readonly modalContentComponent: React.ReactNode;
   readonly children: React.ReactNode;
 };
 
-export default function Modal({ icon, iconClasses, buttonPosClasses, children }: Props) {
+export default function Modal({ modalContentComponent, children }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
-  const divRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const modalDivRef = useRef<HTMLDivElement>(null);
+  const openDivRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleOutSideClick = (event: MouseEvent) => {
-      if (!divRef.current?.contains(event.target as Node) && !buttonRef.current?.contains(event.target as Node)) {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!modalDivRef.current?.contains(event.target as Node) && !openDivRef.current?.contains(event.target as Node)) {
         setModalOpen(false);
       }
     };
-    window.addEventListener('mousedown', handleOutSideClick);
-    return () => {
-      window.removeEventListener('mousedown', handleOutSideClick);
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setModalOpen(false);
+      }
     };
-  }, [divRef]);
+
+    window.addEventListener('click', handleOutsideClick);
+    document.addEventListener('keydown', handleEscapeKey);
+
+    return () => {
+      window.removeEventListener('click', handleOutsideClick);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [modalDivRef]);
 
   return (
-    <div>
-      <button
-        ref={buttonRef}
-        className={buttonPosClasses}
-        onClick={() => {
-          setModalOpen(!modalOpen);
-        }}>
-        {icon === 'question' && <QuestionMarkCircleIcon className={iconClasses} />}
-        {icon === 'plus' && <PlusIcon className={iconClasses} />}
-      </button>
+    <div
+      ref={openDivRef}
+      className='cursor-pointer'
+      onClick={() => {
+        setModalOpen(!modalOpen);
+      }}>
+      {/* {icon === 'question' && <QuestionMarkCircleIcon className={iconClasses} />}
+      {icon === 'plus' && <PlusIcon className={iconClasses} />} */}
+      {children}
       {modalOpen && (
-        <div className='absolute z-10 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-screen h-screen backdrop-blur-sm transition-opacity duration-700 ease-in-out'>
+        <div className='fixed z-50 left-0 top-0 transform cursor-default w-screen h-screen backdrop-blur-sm transition-opacity duration-700 ease-in-out'>
           <div
-            ref={divRef}
-            className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 py-12 px-8 max-w-5xl rounded-2xl bg-white drop-shadow-2xl'>
+            ref={modalDivRef}
+            onClick={(event) => {
+              event.stopPropagation(); // THIS IS EXPERIMENTAL, TO PREVENT MODAL CLOSING ON CLICK.
+            }}
+            className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2  py-12 px-8 max-w-5xl rounded-2xl bg-white drop-shadow-2xl'>
             <button
               className='absolute right-5 top-5'
               onClick={() => {
@@ -50,7 +59,7 @@ export default function Modal({ icon, iconClasses, buttonPosClasses, children }:
               }}>
               <XMarkIcon className='h-7 w-7 text-gray-500 hover:text-orange-500 hover:scale-110 transition-all duration-150' />
             </button>
-            {children}
+            {modalContentComponent}
           </div>
         </div>
       )}

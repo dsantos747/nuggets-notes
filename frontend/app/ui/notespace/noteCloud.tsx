@@ -1,4 +1,6 @@
 import { NoteWithTags } from '@/app/lib/types';
+import Modal from '../modal';
+import NoteForm from '../note/noteForm';
 import DeleteNote from '../note/deleteNoteButton';
 
 type Props = {
@@ -24,23 +26,29 @@ export default function NoteCloud({ notes }: Props) {
   //   }));
 
   return (
-    <div className='fixed -z-10 top-0 left-0 w-screen h-screen'>
+    <div className='fixed pointer-events-none top-0 left-0 w-screen h-screen'>
       {notes?.map((note: NoteWithTags, i: number) => {
         return (
-          <div
-            key={note.id}
-            style={{ top: divPositions[i].top, left: divPositions[i].left }}
-            className='p-4 absolute bg-white bg-opacity-30 w-max border-2 border-solid border-white rounded-md max-w-64 scale-75'>
-            <h3>{note.title}</h3>
-            <p>{note.text}</p>
-            {note.tags.map((tag: string, id: number) => {
-              return (
-                <span key={id} className='px-2'>
-                  {tag}
-                </span>
-              );
-            })}
-            <DeleteNote noteId={note.id}></DeleteNote>
+          <div className='pointer-events-auto absolute' style={{ top: divPositions[i].top, left: divPositions[i].left }} key={note.id}>
+            <Modal
+              modalContentComponent={
+                <div>
+                  <NoteForm noteState={note}></NoteForm>
+                  <DeleteNote noteId={note.id}></DeleteNote>
+                </div>
+              }>
+              <div className='p-4 absolute bg-white bg-opacity-30 w-max border-2 border-solid border-white rounded-md max-w-64 scale-75'>
+                <h3 className='select-none'>{note.title}</h3>
+                <p className='select-none'>{note.text}</p>
+                {note.tags.map((tag: string, id: number) => {
+                  return (
+                    <span key={id} className='px-2 select-none'>
+                      {tag}
+                    </span>
+                  );
+                })}
+              </div>
+            </Modal>
           </div>
         );
       })}

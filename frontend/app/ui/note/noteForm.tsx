@@ -6,9 +6,12 @@ import { createNote } from '../../lib/actions';
 import { caprasimo } from '../fonts';
 import { Button } from '../button';
 import { useState, KeyboardEventHandler } from 'react';
-import { NoteFormState } from '../../lib/types';
+import { NoteFormState, NoteWithTags, NoteForm } from '../../lib/types';
+import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
 
-type Props = {};
+type Props = {
+  noteState?: NoteWithTags;
+};
 
 const components = {
   DropdownIndicator: null,
@@ -32,12 +35,30 @@ const createOption = (label: string) => ({
  * - Can use that to determine whether we update or create note.
  * - Believe a similar method was used in the next js demo app
  */
-export default function CreateNoteForm({}: Props) {
+export default function NoteForm({ noteState }: Props) {
+  let note: NoteForm;
+  if (!noteState) {
+    note = { id: '', user_id: '', title: '', text: '', tags: [] };
+  } else {
+    note = {
+      id: noteState.id,
+      user_id: noteState.user_id,
+      title: noteState.title,
+      text: noteState.text,
+      tags: noteState.tags,
+    };
+  }
+
+  /**
+   * See if these States can be modified to fit with overall formState
+   */
   const initialState: NoteFormState = { message: null, errors: {} };
   const [errorMessage, dispatch] = useFormState(createNote, initialState);
 
+  const defaultValueOptions = note.tags.map((value) => ({ value, label: value }));
+
   const [inputValue, setInputValue] = useState('');
-  const [value, setValue] = useState<readonly Option[]>([]);
+  const [value, setValue] = useState<readonly Option[]>(defaultValueOptions);
 
   const handleKeyDown: KeyboardEventHandler = (e) => {
     if (!inputValue) return;
@@ -64,6 +85,7 @@ export default function CreateNoteForm({}: Props) {
               type='text'
               name='title'
               autoComplete='off'
+              defaultValue={note.title}
               placeholder='Enter a note title (optional)'
               aria-labelledby='title-label'
             />
@@ -78,6 +100,7 @@ export default function CreateNoteForm({}: Props) {
               type='text'
               name='text'
               autoComplete='off'
+              defaultValue={note.text}
               placeholder='Start writing your new note...'
               required
               aria-labelledby='text-label'
@@ -95,6 +118,7 @@ export default function CreateNoteForm({}: Props) {
               inputValue={inputValue}
               isClearable
               isMulti
+              // defaultValue={defaultValueOptions.map((e) => e)}
               menuIsOpen={false}
               onChange={(newValue) => setValue(newValue)}
               onInputChange={(newValue) => setInputValue(newValue)}
@@ -105,15 +129,16 @@ export default function CreateNoteForm({}: Props) {
             />
           </div>
         </div>
-        <SubmitButton text='Create Note' />
-        {/* <div className='flex h-8 items-end space-x-1' aria-live='polite' aria-atomic='true'>
-          {errorMessage && (
+        <SubmitButton text={`${noteState ? 'Update' : 'Create'} Note`} />
+
+        <div className='flex h-8 items-end space-x-1' aria-live='polite' aria-atomic='true'>
+          {errorMessage?.message && (
             <>
               <ExclamationCircleIcon className='h-5 w-5 text-red-500' />
               <p className='text-sm text-red-500'>{errorMessage.message}</p>
             </>
           )}
-        </div> */}
+        </div>
       </div>
     </form>
   );

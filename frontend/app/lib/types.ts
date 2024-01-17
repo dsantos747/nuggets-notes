@@ -15,7 +15,7 @@ export type User = {
 export type Note = {
   id: string;
   user_id: string;
-  title: string | null;
+  title: string | undefined;
   text: string;
   date_created: Date; //string; // Should this be type Date
   date_modified: Date;
@@ -82,7 +82,7 @@ export type NotesTable = {
 export type NoteForm = {
   id: string;
   user_id: string;
-  title: string | null;
+  title: string | undefined;
   text: string;
   tags: string[];
 };
