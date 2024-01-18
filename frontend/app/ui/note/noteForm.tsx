@@ -2,30 +2,33 @@
 
 import CreatableSelect from 'react-select';
 import { useFormState, useFormStatus } from 'react-dom';
-import { createNote } from '../../lib/actions';
+import { createNote, deleteNote } from '../../lib/actions';
 import { caprasimo } from '../fonts';
 import { Button } from '../button';
 import { useState, KeyboardEventHandler } from 'react';
-import { NoteFormState, NoteWithTags, NoteForm } from '../../lib/types';
-import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { NoteFormState, NoteWithTags, NoteForm, Tag } from '../../lib/types';
+import { ExclamationCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
+import TagField from './tagField';
+import Modal from '../modal';
 
 type Props = {
-  noteState?: NoteWithTags;
+  readonly noteState?: NoteWithTags;
+  readonly userTags: Tag[];
 };
 
-const components = {
-  DropdownIndicator: null,
-};
+// const components = {
+//   DropdownIndicator: null,
+// };
 
-interface Option {
-  readonly label: string;
-  readonly value: string;
-}
+// interface Option {
+//   readonly label: string;
+//   readonly value: string;
+// }
 
-const createOption = (label: string) => ({
-  label,
-  value: label,
-});
+// const createOption = (label: string) => ({
+//   label,
+//   value: label,
+// });
 
 /**
  * Consider:
@@ -35,7 +38,7 @@ const createOption = (label: string) => ({
  * - Can use that to determine whether we update or create note.
  * - Believe a similar method was used in the next js demo app
  */
-export default function NoteForm({ noteState }: Props) {
+export default function NoteForm({ noteState, userTags }: Props) {
   let note: NoteForm;
   if (!noteState) {
     note = { id: '', user_id: '', title: '', text: '', tags: [] };
@@ -49,87 +52,69 @@ export default function NoteForm({ noteState }: Props) {
     };
   }
 
-  /**
-   * See if these States can be modified to fit with overall formState
-   */
   const initialState: NoteFormState = { message: null, errors: {} };
   const [errorMessage, dispatch] = useFormState(createNote, initialState);
 
-  const defaultValueOptions = note.tags.map((value) => ({ value, label: value }));
-
-  const [inputValue, setInputValue] = useState('');
-  const [value, setValue] = useState<readonly Option[]>(defaultValueOptions);
-
-  const handleKeyDown: KeyboardEventHandler = (e) => {
-    if (!inputValue) return;
-    switch (e.key) {
-      case 'Enter':
-      case 'Tab':
-        setValue((prev) => [...prev, createOption(inputValue)]);
-        setInputValue('');
-        e.preventDefault();
-    }
-  };
-
   return (
-    <form action={dispatch} className='space-y-3'>
-      <div className='flex-1 rounded-lg bg-gray-50 px-6 py-4 min-w-64'>
-        <div className='w-full'>
-          <div>
-            <label id='title-label' className='mb-3 mt-5 block text-xs font-medium text-gray-900' htmlFor='title'>
+    <form action={dispatch}>
+      <div className='flex-1 rounded-lg pt-6 pb-1 min-w-[70vw] md:min-w-96'>
+        <input id='id' name='id' type='text' autoComplete='off' defaultValue={note.id} hidden aria-hidden></input>
+        <div className='w-full bg-amber-50 border border-gray-200  rounded-xl'>
+          <div className=''>
+            {/* <label id='title-label' className='mb-3 mt-5 block text-xs font-medium text-gray-900' htmlFor='title'>
               Title
-            </label>
+            </label> */}
             <input
-              className={`${caprasimo.className} peer block w-full rounded-md border border-gray-200 py-[9px] text-sm outline-2 placeholder:text-gray-500`}
+              className={`${caprasimo.className} bg-transparent rounded-t-xl block w-full border-b border-amber-500 p-2 placeholder:text-gray-500 placeholder:text-xs focus-visible:outline-amber-600`}
               id='title'
               type='text'
               name='title'
               autoComplete='off'
               defaultValue={note.title}
               placeholder='Enter a note title (optional)'
-              aria-labelledby='title-label'
+              aria-label='Note title'
+              // aria-labelledby='title-label'
             />
           </div>
-          <div className='mt-4'>
-            <label id='text-label' className='mb-3 mt-5 block text-xs font-medium text-gray-900' htmlFor='text'>
+          <div className=''>
+            {/* <label id='text-label' className='mb-3 mt-5 block text-xs font-medium text-gray-900' htmlFor='text'>
               Text
-            </label>
-            <input
-              className='peer block w-full rounded-md border border-gray-200 py-[9px] text-sm outline-2 placeholder:text-gray-500'
+            </label> */}
+            <textarea
+              className='block bg-transparent resize-none rounded-b-xl w-full p-2 text-sm placeholder:text-gray-500 focus-visible:outline-amber-600 '
               id='text'
-              type='text'
               name='text'
+              rows={8}
               autoComplete='off'
               defaultValue={note.text}
               placeholder='Start writing your new note...'
               required
-              aria-labelledby='text-label'
-            />
-          </div>
-          <div className='mt-4'>
-            <label id='tags-label' className='mb-3 mt-5 block text-xs font-medium text-gray-900' htmlFor='tags'>
-              Tags
-            </label>
-            <CreatableSelect
-              id='tags'
-              instanceId={'tag'}
-              name='tags'
-              components={components}
-              inputValue={inputValue}
-              isClearable
-              isMulti
-              // defaultValue={defaultValueOptions.map((e) => e)}
-              menuIsOpen={false}
-              onChange={(newValue) => setValue(newValue)}
-              onInputChange={(newValue) => setInputValue(newValue)}
-              onKeyDown={handleKeyDown}
-              placeholder='Type some tags and press enter...'
-              value={value}
-              aria-labelledby='tags-label'
+              aria-label='Note text'
+              // aria-labelledby='text-label'
             />
           </div>
         </div>
-        <SubmitButton text={`${noteState ? 'Update' : 'Create'} Note`} />
+        <div className='my-2'>
+          <TagField tags={note.tags} userTags={userTags}></TagField>
+        </div>
+        <div className='flex gap-2 mt-4'>
+          <SubmitButton text={`${noteState ? 'Update' : 'Create'} Note`} />
+          {/* <DeleteNoteButton noteId={note.id}></DeleteNoteButton> */}
+          <Modal
+            hasBlur={false}
+            modalContentComponent={
+              <div className='max-w-64 text-center space-y-2'>
+                <p>
+                  Are you <span className='font-semibold'>sure</span>? This action can&apos;t be undone.
+                </p>
+                <DeleteNoteButton noteId={note.id}></DeleteNoteButton>
+              </div>
+            }>
+            <div className='rounded-lg bg-red-500 flex items-center justify-center w-10 aspect-square'>
+              <TrashIcon className='h-5 w-5 text-white' />
+            </div>
+          </Modal>
+        </div>
 
         <div className='flex h-8 items-end space-x-1' aria-live='polite' aria-atomic='true'>
           {errorMessage?.message && (
@@ -148,13 +133,37 @@ interface SubmitButtonProps {
   readonly text: string;
 }
 
+type DeleteButtonProps = {
+  readonly noteId: string;
+};
+
 function SubmitButton({ text }: SubmitButtonProps) {
   const { pending } = useFormStatus();
 
   return (
-    <Button className='mt-4 w-full' aria-disabled={pending}>
+    <Button className='grow' aria-disabled={pending} type='submit'>
       {text}
       {/* <ArrowRightIcon className='ml-auto h-5 w-5 text-gray-50' /> */}
     </Button>
+  );
+}
+
+function DeleteNoteButton({ noteId }: DeleteButtonProps) {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    await deleteNote(noteId);
+    setDeleting(false);
+  };
+
+  return (
+    <button
+      type='button'
+      className='rounded-lg bg-red-500 items-center justify-center px-4 h-10 mx-auto text-white disabled:bg-red-300'
+      onClick={handleDelete}
+      disabled={deleting}>
+      Delete Note
+    </button>
   );
 }

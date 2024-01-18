@@ -3,12 +3,13 @@
 import { deleteNote } from '../../lib/actions';
 
 type Props = {
-  noteId: string;
+  readonly noteId: string;
 };
 
 export default function DeleteNote({ noteId }: Props) {
   return (
     <button
+      type='button'
       onClick={() => {
         deleteNote(noteId);
       }}>

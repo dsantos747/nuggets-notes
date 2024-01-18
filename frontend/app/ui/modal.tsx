@@ -5,10 +5,11 @@ import { useState, useEffect, useRef } from 'react';
 
 type Props = {
   readonly modalContentComponent: React.ReactNode;
+  readonly hasBlur?: boolean;
   readonly children: React.ReactNode;
 };
 
-export default function Modal({ modalContentComponent, children }: Props) {
+export default function Modal({ modalContentComponent, hasBlur = true, children }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const modalDivRef = useRef<HTMLDivElement>(null);
   const openDivRef = useRef<HTMLDivElement>(null);
@@ -41,17 +42,18 @@ export default function Modal({ modalContentComponent, children }: Props) {
       onClick={() => {
         setModalOpen(!modalOpen);
       }}>
-      {/* {icon === 'question' && <QuestionMarkCircleIcon className={iconClasses} />}
-      {icon === 'plus' && <PlusIcon className={iconClasses} />} */}
       {children}
       {modalOpen && (
-        <div className='fixed z-50 left-0 top-0 transform cursor-default w-screen h-screen backdrop-blur-sm transition-opacity duration-700 ease-in-out'>
+        <div
+          className={`fixed z-50 left-0 top-0 transform cursor-default w-screen h-screen ${
+            hasBlur ? 'backdrop-blur-sm' : ''
+          } transition-opacity duration-700 ease-in-out`}>
           <div
             ref={modalDivRef}
             onClick={(event) => {
               event.stopPropagation(); // THIS IS EXPERIMENTAL, TO PREVENT MODAL CLOSING ON CLICK.
             }}
-            className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2  py-12 px-8 max-w-5xl rounded-2xl bg-white drop-shadow-2xl'>
+            className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2  p-8 rounded-2xl bg-white drop-shadow-2xl'>
             <button
               className='absolute right-5 top-5'
               onClick={() => {

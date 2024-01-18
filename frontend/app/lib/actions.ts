@@ -12,13 +12,13 @@ import sql from './db';
 
 const NoteFormSchema = z.object({
   id: z.string(),
-  user_id: z.string(),
+  // user_id: z.string(),
   title: z.string(),
   text: z.string({
     invalid_type_error: 'Please enter some text.',
   }),
-  date_created: z.coerce.date(),
-  date_modified: z.coerce.date(),
+  // date_created: z.coerce.date(),
+  // date_modified: z.coerce.date(),
   // tags: z.array(z.object({ value: z.string() })),
   tags: z.unknown(z.string()),
 });
@@ -39,8 +39,8 @@ const AuthFormSchema = z.object({
   }),
 });
 
-const CreateNote = NoteFormSchema.omit({ id: true, user_id: true, date_created: true, date_modified: true });
-const UpdateNote = NoteFormSchema.omit({ id: true, user_id: true, date_created: true, date_modified: true });
+// const CreateNote = NoteFormSchema.omit({ id: true, user_id: true, date_created: true, date_modified: true });
+// const UpdateNote = NoteFormSchema.omit({ user_id: true, date_created: true, date_modified: true });
 
 const Login = AuthFormSchema.omit({ id: true, name: true, confirmPassword: true, tags: true });
 const SignUp = AuthFormSchema.omit({ id: true });
@@ -53,7 +53,8 @@ export async function createNote(prevState: NoteFormState | undefined, formData:
     return { message: 'Could not authorise user.' };
   }
 
-  const validatedFields = CreateNote.safeParse({
+  const validatedFields = NoteFormSchema.safeParse({
+    id: formData.get('id'),
     title: formData.get('title'),
     text: formData.get('text'),
   });
@@ -63,74 +64,106 @@ export async function createNote(prevState: NoteFormState | undefined, formData:
       message: 'Missing Fields. Failed to Create Note',
     };
   }
-  const { title, text } = validatedFields.data;
+  let { id, title, text } = validatedFields.data;
+
+  /**
+   * Use this mode variable to determine what SQL query to do
+   */
 
   // Handle errors in this?
   const tagEntries = Array.from(formData.entries()).filter(([name]) => name === 'tags');
   const tags = tagEntries.map(([, value]) => value.toString());
   // return { message: 'test' };
 
-  try {
-    await sql.begin(async (sql) => {
-      const newNote: Note[] = await sql`
-        INSERT INTO notes (user_id, title, text, date_created, date_modified)
-        VALUES (${user_id}, ${title}, ${text}, NOW(), NOW())
-        RETURNING *
-      `;
+  if (id === '') {
+    // Create Note
+    try {
+      await sql.begin(async (sql) => {
+        const newNote: Note[] = await sql`
+          INSERT INTO notes (user_id, title, text, date_created, date_modified)
+          VALUES (${user_id}, ${title}, ${text}, NOW(), NOW())
+          RETURNING *
+        `;
 
-      const noteId = newNote[0].id;
-      const tagsObj = tags.map((tag) => ({ name: tag, user_id: user_id, manual: 'true' }));
+        const note_id = newNote[0].id;
+        const tagsObj = tags.map((tag) => ({ name: tag, user_id: user_id, manual: 'true' }));
 
-      await sql`INSERT INTO tags
-        ${sql(tagsObj, 'name', 'user_id', 'manual')}
-        ON CONFLICT (name, user_id) DO NOTHING
-      `;
+        await sql`INSERT INTO tags
+          ${sql(tagsObj, 'name', 'user_id', 'manual')}
+          ON CONFLICT (name, user_id) DO NOTHING
+        `;
 
-      await sql`
-        INSERT INTO notes_tags (note_id, tag_id)
-        SELECT ${noteId}, tags.id
-        FROM tags
-        WHERE tags.name = ANY(${tags})
-      `;
+        await sql`
+          INSERT INTO notes_tags (note_id, tag_id)
+          SELECT ${note_id}, tags.id
+          FROM tags
+          WHERE tags.name = ANY(${tags})
+        `;
 
-      console.log('Note created successfully! ID:', noteId);
-    });
-  } catch (error) {
-    console.log(error);
-    return { message: 'Database Error: Failed to Create Note' };
+        console.log('Note created successfully! ID:', note_id);
+      });
+    } catch (error) {
+      console.log(error);
+      return { message: 'Database Error: Failed to Create Note' };
+    }
+  } else {
+    // Update Note
+    const note_id = id;
+    try {
+      await sql.begin(async (sql) => {
+        await sql`
+          UPDATE notes SET title=${title},text=${text},date_modified=NOW()
+          WHERE id=${note_id}
+        `;
+
+        const tagsObj = tags.map((tag) => ({ name: tag, user_id: user_id, manual: 'true' }));
+
+        await sql`INSERT INTO tags
+          ${sql(tagsObj, 'name', 'user_id', 'manual')}
+          ON CONFLICT (name, user_id) DO NOTHING
+        `;
+
+        await sql`
+          DELETE FROM notes_tags
+          WHERE note_id = ${note_id} AND tag_id NOT IN (
+            SELECT id FROM tags WHERE name = ANY(${tags})
+          )
+        `;
+
+        await sql`
+          INSERT INTO notes_tags (note_id, tag_id)
+          SELECT ${note_id}, tags.id
+          FROM tags
+          WHERE tags.name = ANY(${tags})
+        `;
+
+        // Delete tags if their id is not present in notes_tags, for note_id's filtered to user.
+        await sql`
+          DELETE FROM tags
+          WHERE id NOT IN (
+            SELECT DISTINCT tag_id
+            FROM notes_tags
+            WHERE note_id IN (
+              SELECT id
+              FROM notes
+              WHERE user_id = ${user_id}
+            )
+          )
+        `;
+
+        console.log('Note updated successfully! ID:', note_id);
+      });
+    } catch (error) {
+      console.log(error);
+      return { message: 'Database Error: Failed to Update Note' };
+    }
   }
+
   revalidatePath('/notespace');
   revalidateTag('latestNotes');
+  revalidateTag('userTags');
   // redirect('/notespace');
 }
-
-// export async function updateInvoice(id: string, prevState: NoteFormState, formData: FormData) {
-//   const validatedFields = UpdateInvoice.safeParse({
-//     customerId: formData.get('customerId'),
-//     amount: formData.get('amount'),
-//     status: formData.get('status'),
-//   });
-//   if (!validatedFields.success) {
-//     return {
-//       errors: validatedFields.error.flatten().fieldErrors,
-//       message: 'Missing Fields. Failed to Update Invoice.',
-//     };
-//   }
-
-//   const { customerId, amount, status } = validatedFields.data;
-//   const amountInCents = amount * 100;
-//     try {
-//       await sql`
-//       UPDATE invoices
-//       SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-//       WHERE id = ${id}
-//     `;
-//     } catch (error) {
-//       return { message: 'Database Error: Failed to Update Invoice' };
-//     }
-//   revalidatePath('/dashboard/invoices');
-//   redirect('/dashboard/invoices');
-// }
 
 export async function deleteNote(id: string) {
   /**
@@ -168,6 +201,7 @@ export async function deleteNote(id: string) {
       `;
       revalidatePath('/notespace');
       revalidateTag('latestNotes');
+      revalidateTag('userTags');
       return { message: 'Deleted Note' };
     });
   } catch (error) {
@@ -198,15 +232,6 @@ export async function login(prevState: { message: string } | undefined, formData
 
 export async function signUp(prevState: { message: string } | undefined, formData: FormData) {
   try {
-    // const name = formData.get('name')?.toString();
-    // const email = formData.get('email')?.toString();
-    // const password = formData.get('password')?.toString();
-    // const confirmPassword = formData.get('confirmPassword')?.toString();
-    // if (!name || !email || !password || !confirmPassword) {
-    //   // TS requires to ensure type is not undefined
-    //   throw new Error('Invalid Form data.');
-    // }
-
     const validatedFields = SignUp.safeParse({
       name: formData.get('name'),
       email: formData.get('email'),

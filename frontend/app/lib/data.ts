@@ -1,7 +1,5 @@
-import postgres from 'postgres';
-import { Note, NoteWithTags, NotesTable, User } from './types';
-import { unstable_noStore as noStore } from 'next/cache';
-import { unstable_cache as doCache } from 'next/cache';
+import { Note, NoteWithTags, Tag, User } from './types';
+import { unstable_noStore as noStore, revalidateTag } from 'next/cache';
 import sql from './db';
 
 type NoteTag = Note & {
@@ -120,5 +118,22 @@ export async function fetchNoteById(id: string, user_id: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch note.');
+  }
+}
+
+export async function fetchUserTags(user_id: string) {
+  console.log('Fetching user tags');
+  try {
+    const latestNotes = await sql<Tag[]>`
+        SELECT name
+        FROM tags
+        WHERE user_id = ${user_id}
+        `;
+
+    revalidateTag('userTags');
+    return latestNotes;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch user tags.');
   }
 }
