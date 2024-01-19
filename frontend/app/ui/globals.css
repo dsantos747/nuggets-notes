@@ -47,12 +47,18 @@
   }
 }
 
-.button-1 {
+/* .button-1 {
   @apply py-2 rounded text-center flex-1 max-w-36 border-2 hover:scale-95 transition-all duration-75;
-}
+} */
 
 .text-gradient {
   background: radial-gradient(ellipse at 50% 90%, #92400e, black);
+  color: transparent;
+  background-clip: text;
+}
+
+.plus-gradient {
+  background: radial-gradient(circle at center, #92400e, black 50%);
   color: transparent;
   background-clip: text;
 }
@@ -138,5 +144,58 @@
   }
   100% {
     opacity: 1;
+  }
+}
+
+#tumbleweed {
+  animation: moveRightFade 4s linear infinite;
+}
+
+#tumblebounce {
+  animation: bounce 2s cubic-bezier(0.37, -0.14, 0.68, 1.07) infinite;
+}
+
+#tumble {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes moveRightFade {
+  0% {
+    opacity: 0;
+    transform: translateX(-600px);
+  }
+  30% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(600px);
+  }
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(-20px);
+  }
+  50% {
+    transform: translateY(-40px);
+  }
+  100% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

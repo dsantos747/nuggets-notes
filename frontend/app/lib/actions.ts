@@ -160,7 +160,7 @@ export async function createNote(prevState: NoteFormState | undefined, formData:
   }
 
   revalidatePath('/notespace');
-  revalidateTag('latestNotes');
+  revalidateTag('userNotes');
   revalidateTag('userTags');
   // redirect('/notespace');
 }
@@ -200,7 +200,7 @@ export async function deleteNote(id: string) {
         )
       `;
       revalidatePath('/notespace');
-      revalidateTag('latestNotes');
+      revalidateTag('userNotes');
       revalidateTag('userTags');
       return { message: 'Deleted Note' };
     });

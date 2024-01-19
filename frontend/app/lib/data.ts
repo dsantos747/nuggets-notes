@@ -62,6 +62,24 @@ export async function fetchLatestNotes(limit: number, user_id: string) {
   }
 }
 
+export async function fetchAllNotes(user_id: string) {
+  console.log('Fetching user notes');
+  try {
+    const userNotes = await sql<NoteTag[]>`
+        SELECT notes.id, notes.title, notes.text, notes.date_created, notes.date_modified, tags.name AS tag_name
+        FROM notes
+        LEFT JOIN notes_tags ON notes.id = notes_tags.note_id
+        LEFT JOIN tags ON notes_tags.tag_id = tags.id
+        WHERE notes.user_id = ${user_id}
+        ORDER BY notes.date_modified DESC`;
+
+    return parseNoteTags(userNotes);
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch user notes.');
+  }
+}
+
 // const INVOICES_PER_PAGE = 6;
 // export async function fetchFilteredNotes(query: string, currentPage: number) {
 //   noStore();

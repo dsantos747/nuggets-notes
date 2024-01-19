@@ -19,6 +19,17 @@ export default function Home() {
       <div className=''>
         <LoginForm />
       </div>
+      <div className='absolute bottom-4 right-8 text-xs text-amber-800'>
+        Created by{' '}
+        <a href='https://danielsantosdev.vercel.app/' className='underline'>
+          Daniel Santos
+        </a>{' '}
+        (
+        <a href='https://github.com/dsantos747/nuggets-notes' className='underline'>
+          Github
+        </a>
+        )
+      </div>
     </main>
   );
 }

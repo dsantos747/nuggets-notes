@@ -61,9 +61,9 @@ export default function NoteForm({ noteState, userTags }: Props) {
         <input id='id' name='id' type='text' autoComplete='off' defaultValue={note.id} hidden aria-hidden></input>
         <div className='w-full bg-amber-50 border border-gray-200  rounded-xl'>
           <div className=''>
-            {/* <label id='title-label' className='mb-3 mt-5 block text-xs font-medium text-gray-900' htmlFor='title'>
+            <label id='title-label' className='sr-only' htmlFor='title'>
               Title
-            </label> */}
+            </label>
             <input
               className={`${caprasimo.className} bg-transparent rounded-t-xl block w-full border-b border-amber-500 p-2 placeholder:text-gray-500 placeholder:text-xs focus-visible:outline-amber-600`}
               id='title'
@@ -77,9 +77,9 @@ export default function NoteForm({ noteState, userTags }: Props) {
             />
           </div>
           <div className=''>
-            {/* <label id='text-label' className='mb-3 mt-5 block text-xs font-medium text-gray-900' htmlFor='text'>
+            <label id='text-label' className='sr-only' htmlFor='text'>
               Text
-            </label> */}
+            </label>
             <textarea
               className='block bg-transparent resize-none rounded-b-xl w-full p-2 text-sm placeholder:text-gray-500 focus-visible:outline-amber-600 '
               id='text'
@@ -99,7 +99,6 @@ export default function NoteForm({ noteState, userTags }: Props) {
         </div>
         <div className='flex gap-2 mt-4'>
           <SubmitButton text={`${noteState ? 'Update' : 'Create'} Note`} />
-          {/* <DeleteNoteButton noteId={note.id}></DeleteNoteButton> */}
           <Modal
             hasBlur={false}
             modalContentComponent={

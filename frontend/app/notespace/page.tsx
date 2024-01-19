@@ -5,7 +5,6 @@ import NoteForm from '../ui/note/noteForm';
 import { unstable_cache } from 'next/cache';
 import Modal from '../ui/modal';
 import NoteCloud from '../ui/notespace/noteCloud';
-import { PlusIcon } from '@heroicons/react/24/outline';
 import { caprasimo } from '../ui/fonts';
 
 async function NotespacePage() {
@@ -16,7 +15,7 @@ async function NotespacePage() {
 
   if (typeof authStatus?.user?.id === 'string') {
     // Cache incorporated to prevent db call on EVERY page reload
-    const getCachedLatestNotes = unstable_cache(async (n, id) => fetchLatestNotes(n, id), undefined, { tags: ['latestNotes'] });
+    const getCachedLatestNotes = unstable_cache(async (n, id) => fetchLatestNotes(n, id), undefined, { tags: ['userNotes'] });
     const getUserTags = unstable_cache(async (id) => fetchUserTags(id), undefined, { tags: ['userTags'] });
 
     latestNotes = await getCachedLatestNotes(numberOfNotes, authStatus.user.id);
@@ -24,16 +23,11 @@ async function NotespacePage() {
   }
 
   return (
-    <div className='relative text-center'>
-      <p>Hello, {authStatus?.user?.name ?? 'Guest'}! Welcome to</p>
-      <h1 className={`${caprasimo.className} text-6xl select-none text-center text-gradient pb-4`}>nuggets.com</h1>
+    <div className='relative text-center mx-auto'>
       <NoteCloud notes={latestNotes} userTags={userTags}></NoteCloud>
-      {/* <SearchBar></SearchBar> */}
-      <div>A nice big searchbar will go here</div>
       <Modal modalContentComponent={<NoteForm userTags={userTags}></NoteForm>}>
-        <div className='text-black hover:text-orange-800 transition-colors duration-150'>
-          <PlusIcon className='mx-auto h-20 w-20'></PlusIcon>
-          <p className='text-xs -mt-2'>Add Note</p>
+        <div className='flex items-center justify-center bg-amber-300 rounded-full h-24 w-24 hover:opacity-75 transition-all duration-150'>
+          <p className={`${caprasimo.className} plus-gradient text-8xl`}>+</p>
         </div>
       </Modal>
     </div>
