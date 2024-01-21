@@ -51,23 +51,3 @@ export type NoteFormState = {
   };
   message?: string | null;
 };
-
-// export type CustomerFormState = {
-//   errors?: {
-//     name?: string[];
-//     email?: string[];
-//     imageUrl?: string[];
-//   };
-//   message?: string | null;
-// };
-
-// export type LoginFormData = {
-//   email: string;
-//   password: string;
-// };
-
-// export interface SignUpFormData {
-//   name: string;
-//   email: string;
-//   password: string;
-// }

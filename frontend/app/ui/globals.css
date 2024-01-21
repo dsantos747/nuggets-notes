@@ -47,10 +47,6 @@
   }
 }
 
-/* .button-1 {
-  @apply py-2 rounded text-center flex-1 max-w-36 border-2 hover:scale-95 transition-all duration-75;
-} */
-
 .text-gradient {
   background: radial-gradient(ellipse at 50% 90%, #92400e, black);
   color: transparent;

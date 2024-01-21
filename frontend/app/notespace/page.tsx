@@ -1,12 +1,11 @@
 import { auth } from '@/auth';
-import { fetchLatestNotes, fetchUserTags, getCachedAllNotes, getCachedLatestNotes, getUserTags } from '../lib/data';
+import { getCachedAllNotes, getUserTags } from '../lib/data';
 import { NoteWithTags, Tag } from '../lib/types';
 import NoteForm from '../ui/note/noteForm';
-import { unstable_cache } from 'next/cache';
 import Modal from '../ui/modal';
-import NoteCloud from '../ui/notespace/noteCloud';
 import { caprasimo } from '../ui/fonts';
 import NoteGrid from '../ui/notespace/noteGrid';
+// import NoteCloud from '../ui/notespace/noteCloud';
 
 async function NotespacePage() {
   const authStatus = await auth();
@@ -23,6 +22,9 @@ async function NotespacePage() {
     latestNotes = userNotes.slice(0, numberOfNotes);
   }
 
+  /**
+   * Commented code is for NoteCloud layout, which for now is unused.
+   */
   return (
     <div className='relative text-center w-full flex flex-col items-center justify-between h-full'>
       {/* <div className='hidden md:block'>

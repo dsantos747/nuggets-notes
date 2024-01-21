@@ -1,10 +1,18 @@
 'use client';
 
+/**
+ * THIS FILE IS TEMPORARILY UNUSED
+ *
+ * Creating a visually appealing notecloud poses many problems, what with excessive client rendering,
+ * animation gpu tax, complex note positioning around other items on page, and more. Therefore, a simple
+ * grid layout has been implemented in the meantime.
+ */
+
 import { NoteWithTags, Tag } from '@/app/lib/types';
 import Modal from '../modal';
 import NoteForm from '../note/noteForm';
-import anime from 'animejs/lib/anime.es.js';
-import { useEffect, useState } from 'react';
+// import anime from 'animejs/lib/anime.es.js';
+// import { useEffect, useState } from 'react';
 
 type Props = {
   readonly userNotes: NoteWithTags[];
@@ -43,21 +51,21 @@ export default function NoteCloud({ userNotes, userTags }: Props) {
    * - Transform overrides tailwind scale
    * - Animation sometimes stutters (may be related)
    */
-  function randomValues() {
-    anime({
-      targets: '.anime-note',
-      translateX: function () {
-        return anime.random(0, 15);
-      },
-      translateY: function () {
-        return anime.random(0, 15);
-      },
-      easing: 'linear',
-      // delay: anime.stagger(50),
-      duration: 5000,
-      complete: randomValues,
-    });
-  }
+  // function randomValues() {
+  //   anime({
+  //     targets: '.anime-note',
+  //     translateX: function () {
+  //       return anime.random(0, 15);
+  //     },
+  //     translateY: function () {
+  //       return anime.random(0, 15);
+  //     },
+  //     easing: 'linear',
+  //     // delay: anime.stagger(50),
+  //     duration: 5000,
+  //     complete: randomValues,
+  //   });
+  // }
 
   // randomValues();
 

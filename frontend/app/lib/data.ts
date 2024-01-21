@@ -1,4 +1,4 @@
-import { Note, NoteWithTags, Tag, User } from './types';
+import { Note, NoteWithTags, Tag } from './types';
 import { unstable_noStore as noStore, revalidateTag, unstable_cache } from 'next/cache';
 import sql from './db';
 
@@ -79,40 +79,6 @@ export async function fetchAllNotes(user_id: string) {
     throw new Error('Failed to fetch user notes.');
   }
 }
-
-// const INVOICES_PER_PAGE = 6;
-// export async function fetchFilteredNotes(query: string, currentPage: number) {
-//   noStore();
-//   const offset = (currentPage - 1) * INVOICES_PER_PAGE;
-
-//   try {
-//     const notes = await sql<NotesTable>`
-//       SELECT
-//         notes.id,
-//         notes.amount,
-//         notes.date,
-//         notes.status,
-//         customers.name,
-//         customers.email,
-//         customers.image_url
-//       FROM notes
-//       JOIN customers ON notes.customer_id = customers.id
-//       WHERE
-//         customers.name ILIKE ${`%${query}%`} OR
-//         customers.email ILIKE ${`%${query}%`} OR
-//         notes.amount::text ILIKE ${`%${query}%`} OR
-//         notes.date::text ILIKE ${`%${query}%`} OR
-//         notes.status ILIKE ${`%${query}%`}
-//       ORDER BY notes.date DESC
-//       LIMIT ${INVOICES_PER_PAGE} OFFSET ${offset}
-//     `;
-
-//     return notes.rows;
-//   } catch (error) {
-//     console.error('Database Error:', error);
-//     throw new Error('Failed to fetch notes.');
-//   }
-// }
 
 /**
  * Could this be refactored with the general fetchNote - id could be an optional input

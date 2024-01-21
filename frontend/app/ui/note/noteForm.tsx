@@ -1,11 +1,10 @@
 'use client';
 
-import CreatableSelect from 'react-select';
 import { useFormState, useFormStatus } from 'react-dom';
-import { createNote, deleteNote } from '../../lib/actions';
+import { createUpdateNote, deleteNote } from '../../lib/actions';
 import { caprasimo } from '../fonts';
 import { Button } from '../button';
-import { useState, KeyboardEventHandler } from 'react';
+import { useState } from 'react';
 import { NoteFormState, NoteWithTags, NoteForm, Tag } from '../../lib/types';
 import { ExclamationCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
 import TagField from './tagField';
@@ -16,28 +15,6 @@ type Props = {
   readonly userTags: Tag[];
 };
 
-// const components = {
-//   DropdownIndicator: null,
-// };
-
-// interface Option {
-//   readonly label: string;
-//   readonly value: string;
-// }
-
-// const createOption = (label: string) => ({
-//   label,
-//   value: label,
-// });
-
-/**
- * Consider:
- * - If task is to update, note, pass NoteWithTags in as a prop
- * - If NoteWithTags is in prop, define initialState based on the values in it
- * - Rewrite "createNote" (and update it) to check if "id" is in the submitted formData.
- * - Can use that to determine whether we update or create note.
- * - Believe a similar method was used in the next js demo app
- */
 export default function NoteForm({ noteState, userTags }: Props) {
   let note: NoteForm;
   if (!noteState) {
@@ -53,12 +30,12 @@ export default function NoteForm({ noteState, userTags }: Props) {
   }
 
   const initialState: NoteFormState = { message: null, errors: {} };
-  const [errorMessage, dispatch] = useFormState(createNote, initialState);
+  const [errorMessage, dispatch] = useFormState(createUpdateNote, initialState);
 
   return (
-    <form action={dispatch} className=''>
+    <form action={dispatch}>
       <div className='flex-1 rounded-lg pt-6 pb-1 min-w-[70vw] md:min-w-96'>
-        <input id='id' name='id' type='text' autoComplete='off' defaultValue={note.id} hidden aria-hidden></input>
+        <input id='id' name='id' type='text' autoComplete='off' defaultValue={note.id} hidden aria-hidden='true'></input>
         <div className='w-full bg-amber-50 border border-gray-200  rounded-xl'>
           <div className=''>
             <label id='title-label' className='sr-only' htmlFor='title'>
@@ -73,7 +50,6 @@ export default function NoteForm({ noteState, userTags }: Props) {
               defaultValue={note.title}
               placeholder='Enter a note title (optional)'
               aria-label='Note title'
-              // aria-labelledby='title-label'
             />
           </div>
           <div className=''>
@@ -90,7 +66,6 @@ export default function NoteForm({ noteState, userTags }: Props) {
               placeholder='Start writing your new note...'
               required
               aria-label='Note text'
-              // aria-labelledby='text-label'
             />
           </div>
         </div>
@@ -102,7 +77,7 @@ export default function NoteForm({ noteState, userTags }: Props) {
           <Modal
             hasBlur={false}
             modalContentComponent={
-              <div className='max-w-64 text-center space-y-2'>
+              <div className='max-w-64 px-4 text-center text-sm space-y-2'>
                 <p>
                   Are you <span className='font-semibold'>sure</span>? This action can&apos;t be undone.
                 </p>
@@ -142,7 +117,6 @@ function SubmitButton({ text }: SubmitButtonProps) {
   return (
     <Button className='grow' aria-disabled={pending} type='submit'>
       {text}
-      {/* <ArrowRightIcon className='ml-auto h-5 w-5 text-gray-50' /> */}
     </Button>
   );
 }

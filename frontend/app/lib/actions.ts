@@ -39,14 +39,9 @@ const AuthFormSchema = z.object({
   }),
 });
 
-// const CreateNote = NoteFormSchema.omit({ id: true, user_id: true, date_created: true, date_modified: true });
-// const UpdateNote = NoteFormSchema.omit({ user_id: true, date_created: true, date_modified: true });
-
-const Login = AuthFormSchema.omit({ id: true, name: true, confirmPassword: true, tags: true });
 const SignUp = AuthFormSchema.omit({ id: true });
 
-export async function createNote(prevState: NoteFormState | undefined, formData: FormData) {
-  // console.log(formData);
+export async function createUpdateNote(prevState: NoteFormState | undefined, formData: FormData) {
   const authStatus = await auth();
   const user_id = authStatus?.user?.id;
   if (typeof user_id !== 'string') {
@@ -66,14 +61,8 @@ export async function createNote(prevState: NoteFormState | undefined, formData:
   }
   let { id, title, text } = validatedFields.data;
 
-  /**
-   * Use this mode variable to determine what SQL query to do
-   */
-
-  // Handle errors in this?
   const tagEntries = Array.from(formData.entries()).filter(([name]) => name === 'tags');
   const tags = tagEntries.map(([, value]) => value.toString());
-  // return { message: 'test' };
 
   if (id === '') {
     // Create Note
@@ -163,7 +152,6 @@ export async function createNote(prevState: NoteFormState | undefined, formData:
   revalidatePath('/notespace');
   revalidateTag('userNotes');
   revalidateTag('userTags');
-  // redirect('/notespace');
 }
 
 export async function deleteNote(id: string) {
