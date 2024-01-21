@@ -15,11 +15,11 @@ export default function NoteGrid({ userNotes, userTags }: Props) {
   const pathname = usePathname();
   let notes: NoteWithTags[] = [];
   let empty = false;
+  const params = useParams<{ query: string }>();
 
   if (pathname === '/notespace') {
     notes = userNotes;
   } else {
-    const params = useParams<{ query: string }>();
     const searchTags = params.query.toLowerCase().split('%20');
 
     notes = userNotes.filter((note) => {
