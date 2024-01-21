@@ -13,13 +13,13 @@ export default function Home() {
           The place to store all those golden <span className={`${caprasimo.className} text-lg`}>nuggets</span> of information.
         </h3>
         <Modal modalContentComponent={<Info></Info>}>
-          <QuestionMarkCircleIcon className='absolute top-8 left-8 h-7 w-7 text-orange-900 hover:text-black'></QuestionMarkCircleIcon>
+          <QuestionMarkCircleIcon className='absolute top-6 right-4 md:top-8 md:left-8 h-7 w-7 text-orange-900 hover:text-black'></QuestionMarkCircleIcon>
         </Modal>
       </div>
       <div className=''>
         <LoginForm />
       </div>
-      <div className='absolute bottom-4 right-8 text-xs text-amber-800'>
+      <div className='hidden md:block absolute bottom-4 right-8 text-xs text-amber-800'>
         Created by{' '}
         <a href='https://danielsantosdev.vercel.app/' className='underline'>
           Daniel Santos

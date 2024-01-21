@@ -1,5 +1,5 @@
 import { Note, NoteWithTags, Tag, User } from './types';
-import { unstable_noStore as noStore, revalidateTag } from 'next/cache';
+import { unstable_noStore as noStore, revalidateTag, unstable_cache } from 'next/cache';
 import sql from './db';
 
 type NoteTag = Note & {
@@ -155,3 +155,7 @@ export async function fetchUserTags(user_id: string) {
     throw new Error('Failed to fetch user tags.');
   }
 }
+
+export const getCachedAllNotes = unstable_cache(async (id) => fetchAllNotes(id), undefined, { tags: ['userNotes'] });
+export const getCachedLatestNotes = unstable_cache(async (n, id) => fetchLatestNotes(n, id), undefined, { tags: ['userNotes'] });
+export const getUserTags = unstable_cache(async (id) => fetchUserTags(id), undefined, { tags: ['userTags'] });

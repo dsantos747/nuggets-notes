@@ -4,24 +4,38 @@ import { NoteWithTags, Tag } from '@/app/lib/types';
 import Modal from '../modal';
 import NoteForm from '../note/noteForm';
 import anime from 'animejs/lib/anime.es.js';
+import { useEffect, useState } from 'react';
 
 type Props = {
-  readonly notes: NoteWithTags[];
+  readonly userNotes: NoteWithTags[];
   readonly userTags: Tag[];
 };
 
-export default function NoteCloud({ notes, userTags }: Props) {
+export default function NoteCloud({ userNotes, userTags }: Props) {
+  // const [noteCount, setNoteCount] = useState(Math.floor(window.innerWidth / 320) * 2);
+
+  // useEffect(() => {
+  //   const handleResize = () => {
+  //     setNoteCount(Math.floor(window.innerWidth / 320) * 2);
+  //   };
+  //   window.addEventListener('resize', handleResize);
+
+  //   return () => {
+  //     window.removeEventListener('resize', handleResize);
+  //   };
+  // }, []);
+
   const divPositions = [
-    { top: '10%', left: '0%' },
-    { top: '38%', left: '8%' },
-    { top: '76%', left: '12%' },
-    { top: '8%', left: '80%' },
+    { bottom: '36%', left: '25px' },
+    { bottom: '35%', right: '320px' },
+    { top: '37%', left: '54px' },
+    { top: '38%', right: '335px' },
+    { top: '10%', left: '12px' },
+    { top: '8%', right: '260px' },
+    { top: '34%', left: '270px' },
+    { top: '46%', right: '585px' },
+    { bottom: '33%', left: '310px' },
     { top: '14%', left: '17%' },
-    { top: '53%', left: '34%' },
-    { top: '30%', left: '68%' },
-    { top: '52%', left: '3%' },
-    { top: '77%', left: '58%' },
-    { top: '56%', left: '72%' },
   ];
 
   /**
@@ -39,7 +53,7 @@ export default function NoteCloud({ notes, userTags }: Props) {
         return anime.random(0, 15);
       },
       easing: 'linear',
-      delay: anime.stagger(50),
+      // delay: anime.stagger(50),
       duration: 5000,
       complete: randomValues,
     });
@@ -47,31 +61,27 @@ export default function NoteCloud({ notes, userTags }: Props) {
 
   // randomValues();
 
-  // function randomNumInRanges(min: number, max: number) {
-  //   const posChoice = Math.random() * (max - min) + min;
-
-  //   const negMin = max * -1;
-  //   const negMax = min * -1;
-  //   const negChoice = Math.random() * (negMax - negMin) + negMin;
-
-  //   return Math.random() < 0.5 ? posChoice : negChoice;
-  // }
-
-  // const divPositions = Array.from({ length: notes.length }, () => ({
-  //   top: `${Math.random() * 75}%`,
-  //   left: `${Math.random() * 75}%`,
-  // }));
+  let noteCount = 10;
+  let notes = userNotes.slice(0, noteCount);
 
   return (
-    <div className='fixed pointer-events-none top-0 left-0 w-screen h-screen'>
+    <div className='fixed pointer-events-none top-0 left-0 w-screen h-screen z-10'>
       {notes?.map((note: NoteWithTags, i: number) => {
         return (
           <div
             id='noteDiv'
             className='pointer-events-auto absolute'
-            style={{ top: divPositions[i].top, left: divPositions[i].left }}
+            style={{
+              [divPositions[i].top ? 'top' : 'bottom']: divPositions[i].top || divPositions[i].bottom,
+              [divPositions[i].left ? 'left' : 'right']: divPositions[i].left || divPositions[i].right,
+            }}
             key={note.id}>
-            <Modal modalContentComponent={<NoteForm noteState={note} userTags={userTags}></NoteForm>}>
+            <Modal
+              modalContentComponent={
+                <div className='relative z-50'>
+                  <NoteForm noteState={note} userTags={userTags}></NoteForm>
+                </div>
+              }>
               <div
                 id='noteBox'
                 className=' anime-note p-4 absolute bg-white bg-opacity-30 w-max border-2 border-solid border-white rounded-md max-w-64 scale-75'>

@@ -135,6 +135,7 @@ export async function createNote(prevState: NoteFormState | undefined, formData:
           SELECT ${note_id}, tags.id
           FROM tags
           WHERE tags.name = ANY(${tags})
+          ON CONFLICT DO NOTHING
         `;
 
         // Delete tags if their id is not present in notes_tags, for note_id's filtered to user.

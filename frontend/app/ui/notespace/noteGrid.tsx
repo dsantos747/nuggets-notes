@@ -3,7 +3,7 @@
 import { NoteWithTags, Tag } from '@/app/lib/types';
 import Modal from '../modal';
 import NoteForm from '../note/noteForm';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 
 type Props = {
@@ -12,13 +12,20 @@ type Props = {
 };
 
 export default function NoteGrid({ userNotes, userTags }: Props) {
-  const params = useParams<{ query: string }>();
-  const searchTags = params.query.toLowerCase().split('%20');
+  const pathname = usePathname();
+  let notes: NoteWithTags[] = [];
   let empty = false;
 
-  let notes = userNotes.filter((note) => {
-    return note.tags.some((tag) => searchTags.includes(tag.toLowerCase()));
-  });
+  if (pathname === '/notespace') {
+    notes = userNotes;
+  } else {
+    const params = useParams<{ query: string }>();
+    const searchTags = params.query.toLowerCase().split('%20');
+
+    notes = userNotes.filter((note) => {
+      return note.tags.some((tag) => searchTags.includes(tag.toLowerCase()));
+    });
+  }
 
   if (notes.length == 0) {
     empty = true;
@@ -29,7 +36,7 @@ export default function NoteGrid({ userNotes, userTags }: Props) {
       <div className='relative text-center px-4 lg:px-16 gap-4 grid grid-cols-1 min-[600px]:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'>
         {notes?.map((note: NoteWithTags) => {
           return (
-            <div className='pointer-events-auto mx-auto my-auto' key={note.id}>
+            <div className='pointer-events-auto mx-auto my-auto max-w-96' key={note.id}>
               <Modal modalContentComponent={<NoteForm noteState={note} userTags={userTags}></NoteForm>}>
                 <div className='p-4 bg-white bg-opacity-30 border-2 border-solid border-white rounded-md text-sm'>
                   <h3 className='select-none font-semibold text-left'>{note.title}</h3>
@@ -48,9 +55,9 @@ export default function NoteGrid({ userNotes, userTags }: Props) {
         })}
       </div>
       {empty && (
-        <div className='flex justify-center py-18 overflow-hidden'>
-          <div className='text-center'>
-            <div id='tumblebounce' className='pt-52'>
+        <div className='flex justify-center overflow-hidden'>
+          <div className='text-center select-none'>
+            <div id='tumblebounce' className='pt-20'>
               <div id='tumbleweed'>
                 <Image src={'/tumbleweed.png'} alt='Tumbleweed' height={70} width={70} id='tumble' className='opacity-50'></Image>
               </div>

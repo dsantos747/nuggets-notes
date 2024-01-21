@@ -56,7 +56,7 @@ export default function NoteForm({ noteState, userTags }: Props) {
   const [errorMessage, dispatch] = useFormState(createNote, initialState);
 
   return (
-    <form action={dispatch}>
+    <form action={dispatch} className=''>
       <div className='flex-1 rounded-lg pt-6 pb-1 min-w-[70vw] md:min-w-96'>
         <input id='id' name='id' type='text' autoComplete='off' defaultValue={note.id} hidden aria-hidden></input>
         <div className='w-full bg-amber-50 border border-gray-200  rounded-xl'>

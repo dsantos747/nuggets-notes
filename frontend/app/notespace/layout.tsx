@@ -33,7 +33,7 @@ export default async function NotespaceLayout({ children }: { readonly children:
           Sign Out
         </button>
       </form>
-      <div className='relative flex w-full flex-col space-y-8 p-4'>
+      <div className='relative flex w-full flex-col space-y-4 md:space-y-8'>
         {/* <SearchBar></SearchBar> */}
         <div className='mx-auto max-w-lg md:pt-16'>
           <p className='select-none'>Hello, {authStatus?.user?.name ?? 'Guest'}!</p>
@@ -43,7 +43,7 @@ export default async function NotespaceLayout({ children }: { readonly children:
         </div>
         {children}
       </div>
-      <div className='absolute bottom-4 right-8 text-xs text-amber-800'>
+      {/* <div className='absolute bottom-4 right-8 text-xs text-amber-800'>
         Created by{' '}
         <a href='https://danielsantosdev.vercel.app/' className='underline'>
           Daniel Santos
@@ -53,7 +53,7 @@ export default async function NotespaceLayout({ children }: { readonly children:
           Github
         </a>
         )
-      </div>
+      </div> */}
     </main>
   );
 }
