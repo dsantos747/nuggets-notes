@@ -9,7 +9,8 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnNotespace = nextUrl.pathname.startsWith('/notespace');
-      if (isOnNotespace) {
+      const isOnSettings = nextUrl.pathname.startsWith('/settings');
+      if (isOnNotespace || isOnSettings) {
         if (isLoggedIn) return true;
         return false; // Redirect unauthenticated users to login page
       } else if (isLoggedIn) {

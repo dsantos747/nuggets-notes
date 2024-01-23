@@ -57,7 +57,7 @@ export default function NoteGrid({ userNotes, userTags }: Props) {
       {empty && (
         <div className='flex justify-center overflow-hidden'>
           <div className='text-center select-none'>
-            <div id='tumblebounce' className='pt-20'>
+            <div id='tumblebounce' className='pt-20 w-full'>
               <div id='tumbleweed'>
                 <Image src={'/tumbleweed.png'} alt='Tumbleweed' height={70} width={70} id='tumble' className='opacity-50'></Image>
               </div>

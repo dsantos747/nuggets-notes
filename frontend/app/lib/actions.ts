@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
-import { signIn, auth } from '@/auth';
+import { signIn, auth, signOut } from '@/auth';
 import { NoteFormState, Note } from '@/app/lib/types';
 import bcrypt from 'bcrypt';
 import { isRedirectError } from 'next/dist/client/components/redirect';
@@ -252,5 +252,37 @@ export async function signUp(prevState: { message: string } | undefined, formDat
       redirect('/notespace');
     }
     return { message: 'Sign-up error: Failed to create account.' };
+  }
+}
+
+export async function deleteAccount() {
+  // Locating auth here means only the user that triggers the
+  // deleteAccount call can only delete their own account.
+  const authStatus = await auth();
+  const user_id = authStatus?.user?.id;
+  if (typeof user_id !== 'string') {
+    return { message: 'Could not authorise user.' };
+  }
+  try {
+    await sql.begin(async (sql) => {
+      // Delete any entries in notes_tags related to this user's notes
+      await sql`
+        DELETE FROM notes_tags
+        WHERE note_id IN (
+          SELECT id
+          FROM notes
+          WHERE user_id = ${user_id}
+        )
+      `;
+
+      await sql`DELETE FROM tags WHERE user_id = ${user_id}`;
+      await sql`DELETE FROM notes WHERE user_id = ${user_id}`;
+      await sql`DELETE FROM users WHERE id = ${user_id}`;
+
+      return { message: 'Deleted User' };
+    });
+  } catch (error) {
+    console.log(error);
+    return { message: 'Database Error: Failed to Delete User' };
   }
 }

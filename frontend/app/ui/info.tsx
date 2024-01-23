@@ -2,7 +2,7 @@ import { caprasimo } from './fonts';
 
 export default function Info() {
   return (
-    <div className='pt-6 w-max max-w-[70vw]'>
+    <div className='pt-6 w-max max-w-[70vw] select-none'>
       <p className='text-start'>
         Ever needed to just jot something down quickly? Without worrying about where it was, and if you&apos;d be able to find it
         afterwards?

@@ -12,7 +12,7 @@ export function LoginForm() {
   const [errorMessage, dispatch] = useFormState(login, undefined);
   return (
     <form action={dispatch} className='space-y-3'>
-      <div className='flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8 min-w-64'>
+      <div className='flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8 min-w-64 select-none'>
         <h1 className={`${caprasimo.className} mb-3 text-2xl`}>Please log in to continue.</h1>
         <p>
           Not joined yet?{' '}

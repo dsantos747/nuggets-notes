@@ -1,12 +1,17 @@
 import { auth, signOut } from '@/auth';
 import SearchBar from '../ui/notespace/search';
 import { caprasimo } from '../ui/fonts';
+import Link from 'next/link';
+import { CogIcon } from '@heroicons/react/24/outline';
 
 export default async function NotespaceLayout({ children }: { readonly children: React.ReactNode }) {
   const authStatus = await auth();
 
   return (
     <main className='flex justify-center min-h-screen bg-amber-400'>
+      <Link href='/settings' className='absolute left-6 top-4 z-10'>
+        <CogIcon className='h-6 w-6 hover:text-orange-800 transition-colors duration-100'></CogIcon>
+      </Link>
       <form
         action={async () => {
           'use server';
