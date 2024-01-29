@@ -5,8 +5,12 @@ import '@/app/ui/globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'nuggets.notes',
+  title: 'notesnugget.com | Tag-Based Notes',
   description: 'A tag-based notes app to keep all those nuggets of information',
+  referrer: 'origin-when-cross-origin',
+  keywords: ['Notes', 'Tags', 'AI', 'Nuggets'],
+  authors: [{ name: 'Daniel Santos', url: 'https://danielsantosdev.vercel.app/' }],
+  creator: 'Daniel Santos',
 };
 
 export default function RootLayout({ children }: { readonly children: React.ReactNode }) {

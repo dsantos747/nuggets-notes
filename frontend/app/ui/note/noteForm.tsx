@@ -33,8 +33,8 @@ export default function NoteForm({ noteState, userTags }: Props) {
   const [errorMessage, dispatch] = useFormState(createUpdateNote, initialState);
 
   return (
-    <form action={dispatch}>
-      <div className='flex-1 rounded-lg pt-6 pb-1 min-w-[70vw] md:min-w-96'>
+    <form action={dispatch} className='min-w-[70vw] md:min-w-96 lg:w-[600px]'>
+      <div className='flex-1 rounded-lg pt-6 pb-1 '>
         <input id='id' name='id' type='text' autoComplete='off' defaultValue={note.id} hidden aria-hidden='true'></input>
         <div className='w-full bg-amber-50 border border-gray-200  rounded-xl'>
           <div className=''>
@@ -72,10 +72,11 @@ export default function NoteForm({ noteState, userTags }: Props) {
         <div className='my-2'>
           <TagField tags={note.tags} userTags={userTags}></TagField>
         </div>
-        <div className='flex gap-2 mt-4'>
+        <div className='flex gap-2 mt-8'>
           <SubmitButton text={`${noteState ? 'Update' : 'Create'} Note`} />
           <Modal
             hasBlur={false}
+            isWarning={true}
             modalContentComponent={
               <div className='max-w-64 px-4 text-center text-sm space-y-2'>
                 <p>

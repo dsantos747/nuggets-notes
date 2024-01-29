@@ -22,8 +22,8 @@ export default async function NotespaceLayout({ children }: { readonly children:
           Sign Out
         </button>
       </form>
-      <div className='relative flex w-full flex-col space-y-4 md:space-y-8'>
-        <div className='mx-auto max-w-lg md:pt-16'>
+      <div className='relative flex w-full flex-col space-y-4'>
+        <div className='mx-auto max-w-lg pt-10 md:pt-16'>
           <p className='select-none'>Hello, {authStatus?.user?.name ?? 'Guest'}!</p>
           <h1 className={`${caprasimo.className} text-4xl md:text-6xl select-none text-center text-gradient pb-4`}>nuggets.com</h1>
           <SearchBar></SearchBar>

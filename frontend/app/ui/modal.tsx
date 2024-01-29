@@ -6,17 +6,18 @@ import { useState, useEffect, useRef } from 'react';
 type Props = {
   readonly modalContentComponent: React.ReactNode;
   readonly hasBlur?: boolean;
+  readonly isWarning?: boolean;
   readonly children: React.ReactNode;
 };
 
-export default function Modal({ modalContentComponent, hasBlur = true, children }: Props) {
+export default function Modal({ modalContentComponent, hasBlur = true, isWarning = false, children }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const modalDivRef = useRef<HTMLDivElement>(null);
-  const openDivRef = useRef<HTMLDivElement>(null);
+  const blurRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
-      if (!modalDivRef.current?.contains(event.target as Node) && !openDivRef.current?.contains(event.target as Node)) {
+      if (blurRef.current?.contains(event.target as Node) && !modalDivRef.current?.contains(event.target as Node) && modalOpen) {
         setModalOpen(false);
       }
     };
@@ -37,7 +38,6 @@ export default function Modal({ modalContentComponent, hasBlur = true, children 
 
   return (
     <div
-      ref={openDivRef}
       className='cursor-pointer'
       onClick={() => {
         setModalOpen(!modalOpen);
@@ -45,21 +45,24 @@ export default function Modal({ modalContentComponent, hasBlur = true, children 
       {children}
       {modalOpen && (
         <div
-          className={`fixed z-50 left-0 top-0 transform cursor-default w-screen h-screen ${
+          ref={blurRef}
+          className={`fixed z-50 left-0 top-0 cursor-default w-full h-full ${
             hasBlur ? 'backdrop-blur-sm' : ''
           } transition-opacity duration-700 ease-in-out`}>
           <div
             ref={modalDivRef}
             onClick={(event) => {
-              event.stopPropagation(); // THIS IS EXPERIMENTAL, TO PREVENT MODAL CLOSING ON CLICK.
+              event.stopPropagation(); // This prevents the modal closing on click bug.
             }}
-            className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2  p-8 rounded-2xl bg-white drop-shadow-2xl'>
+            className={`absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2  p-8 rounded-2xl bg-white drop-shadow-2xl ${
+              isWarning ? ' shadow-[0_0_30px_-10px_rgba(239,68,68,1)]' : ''
+            }`}>
             <button
               className='absolute right-5 top-5'
               onClick={() => {
                 setModalOpen(!modalOpen);
               }}>
-              <XMarkIcon className='h-7 w-7 text-gray-500 hover:text-orange-500 hover:scale-110 transition-all duration-150' />
+              <XMarkIcon className='h-7 w-7 text-gray-500 hover:text-orange-500 transition-all duration-150' />
             </button>
             {modalContentComponent}
           </div>

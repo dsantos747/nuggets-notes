@@ -109,9 +109,12 @@ export async function fetchUserTags(user_id: string) {
   console.log('Fetching user tags');
   try {
     const latestNotes = await sql<Tag[]>`
-        SELECT name
-        FROM tags
-        WHERE user_id = ${user_id}
+      SELECT tags.id,tags.name,COUNT(notes_tags.note_id) AS tag_count FROM tags
+      JOIN notes_tags ON tags.id = notes_tags.tag_id
+      JOIN notes ON notes_tags.note_id = notes.id
+      WHERE notes.user_id = ${user_id}
+      GROUP BY tags.id, tags.name
+      ORDER BY tag_count DESC;
         `;
 
     revalidateTag('userTags');

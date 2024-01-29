@@ -4,7 +4,6 @@ import { NoteWithTags, Tag } from '@/app/lib/types';
 import Modal from '../modal';
 import NoteForm from '../note/noteForm';
 import { useParams, usePathname } from 'next/navigation';
-import Image from 'next/image';
 
 type Props = {
   readonly userNotes: NoteWithTags[];
@@ -20,11 +19,27 @@ export default function NoteGrid({ userNotes, userTags }: Props) {
   if (pathname === '/notespace') {
     notes = userNotes;
   } else {
+    // If params.query has &, return only notes which include both those params
+    let quotedPhrases: string[] = [];
+    const quotedTerms = params.query.split('%22');
+
     const searchTags = params.query.toLowerCase().split('%20');
 
-    notes = userNotes.filter((note) => {
-      return note.tags.some((tag) => searchTags.includes(tag.toLowerCase()));
-    });
+    const unQuotedTerms = searchTags.filter((tag) => !tag.startsWith('%22') || !tag.endsWith('%22'));
+
+    if (unQuotedTerms.length > 0) {
+      notes = userNotes.filter((note) => note.tags.some((tag) => unQuotedTerms.includes(tag.toLowerCase())));
+    }
+
+    if (quotedTerms.length > 1) {
+      quotedPhrases = quotedTerms.filter((_, i) => i % 2 === 1).map((term) => term.replaceAll('%20', ' ').toLowerCase());
+      notes = userNotes.filter((note) => note.tags.some((tag) => quotedPhrases.includes(tag.toLowerCase())));
+    }
+
+    if (searchTags.some((tag) => tag.includes('%26'))) {
+      const andTerms = searchTags.map((term) => term.split('%26')).flat();
+      notes = userNotes.filter((note) => andTerms.every((term) => note.tags.some((tag) => tag.toLowerCase().includes(term.toLowerCase()))));
+    }
   }
 
   if (notes.length == 0) {
@@ -57,19 +72,10 @@ export default function NoteGrid({ userNotes, userTags }: Props) {
       {empty && (
         <div className='flex justify-center overflow-hidden'>
           <div className='text-center select-none'>
-            <div id='tumblebounce' className='pt-20 w-full'>
-              <div id='tumbleweed'>
-                <Image src={'/tumbleweed.png'} alt='Tumbleweed' height={70} width={70} id='tumble' className='opacity-50'></Image>
-              </div>
-            </div>
             <p className='py-6 text-amber-900 text-sm'>There&apos;s nothing here...</p>
           </div>
         </div>
       )}
     </div>
   );
-}
-
-{
-  /* <a href="https://www.freepik.com/icon/tumbleweed_1171279">Icon by Freepik</a> */
 }

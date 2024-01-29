@@ -1,3 +1,4 @@
+import CreatedBy from '../ui/createdBy';
 import { caprasimo } from '../ui/fonts';
 
 export default function AuthLayout({ children }: { readonly children: React.ReactNode }) {
@@ -11,15 +12,7 @@ export default function AuthLayout({ children }: { readonly children: React.Reac
         {children}
       </div>
       <div className='absolute bottom-4 right-8 text-xs text-fuchsia-800'>
-        Created by{' '}
-        <a href='https://danielsantosdev.vercel.app/' className='underline'>
-          Daniel Santos
-        </a>{' '}
-        (
-        <a href='https://github.com/dsantos747/nuggets-notes' className='underline'>
-          Github
-        </a>
-        )
+        <CreatedBy />
       </div>
     </main>
   );

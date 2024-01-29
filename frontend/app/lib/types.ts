@@ -18,6 +18,7 @@ export type Tag = {
   id?: string;
   name: string;
   user_id?: string;
+  tag_count?: number;
 };
 
 export type NoteWithTags = Note & {

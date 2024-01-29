@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { getCachedAllNotes, getUserTags } from '../../lib/data';
 import { NoteWithTags, Tag } from '../../lib/types';
 import NoteGrid from '@/app/ui/notespace/noteGrid';
+import CreatedBy from '@/app/ui/createdBy';
 
 async function NotespacePage() {
   const authStatus = await auth();
@@ -18,16 +19,7 @@ async function NotespacePage() {
     <div className='flex flex-col justify-between h-full'>
       <NoteGrid userNotes={userNotes} userTags={userTags}></NoteGrid>
       <div className='pointer-events-none z-10 w-full px-4 pb-4 pt-20 md:pt-12 text-right text-xs text-amber-800 bg-gradient-to-t from-amber-400 to-transparent'>
-        {/* eslint-disable */}
-        Created by{' '}
-        <a href='https://danielsantosdev.vercel.app/' className='underline pointer-events-auto'>
-          Daniel Santos
-        </a>{' '}
-        (
-        <a href='https://github.com/dsantos747/nuggets-notes' className='underline pointer-events-auto'>
-          Github
-        </a>
-        ){/* eslint-enable */}
+        <CreatedBy />
       </div>
     </div>
   );
