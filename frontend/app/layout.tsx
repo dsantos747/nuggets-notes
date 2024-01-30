@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'Daniel Santos', url: 'https://danielsantosdev.vercel.app/' }],
   creator: 'Daniel Santos',
   metadataBase: new URL('https://nugget-notes.vercel.app/'),
+  openGraph: {
+    description: 'A tag-based notes app to store all those golden nuggets of information',
+  },
 };
 
 export default function RootLayout({ children }: { readonly children: React.ReactNode }) {
