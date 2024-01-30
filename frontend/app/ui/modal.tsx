@@ -38,6 +38,7 @@ export default function Modal({ modalContentComponent, hasBlur = true, isWarning
 
   return (
     <div
+      data-testid='openModalButton'
       className='cursor-pointer'
       onClick={() => {
         setModalOpen(!modalOpen);
@@ -50,6 +51,7 @@ export default function Modal({ modalContentComponent, hasBlur = true, isWarning
             hasBlur ? 'backdrop-blur-sm' : ''
           } transition-opacity duration-700 ease-in-out`}>
           <div
+            data-testid='modalWindow'
             ref={modalDivRef}
             onClick={(event) => {
               event.stopPropagation(); // This prevents the modal closing on click bug.
@@ -58,6 +60,7 @@ export default function Modal({ modalContentComponent, hasBlur = true, isWarning
               isWarning ? ' shadow-[0_0_30px_-10px_rgba(239,68,68,1)]' : ''
             }`}>
             <button
+              data-testid='closeModalButton'
               className='absolute right-5 top-5'
               onClick={() => {
                 setModalOpen(!modalOpen);
