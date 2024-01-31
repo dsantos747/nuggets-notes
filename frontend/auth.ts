@@ -3,7 +3,6 @@ import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import type { User as DbUser } from '@/app/lib/types'; // To avoid confusion with type User from NextAuth
-// import type { User } from 'next-auth';
 import bcrypt from 'bcrypt';
 import sql from './app/lib/db';
 
@@ -30,8 +29,6 @@ export const { auth, signIn, signOut } = NextAuth({
           if (!user) return null;
           const passwordsMatch = await bcrypt.compare(password, user.password_hashed);
           if (passwordsMatch) {
-            // const formattedUser: User = { id: user.id, name: user.name, email: user.email, image: null };
-            // return formattedUser;
             return user;
           }
         }

@@ -34,13 +34,16 @@ export default function Modal({ modalContentComponent, hasBlur = true, isWarning
       window.removeEventListener('click', handleOutsideClick);
       document.removeEventListener('keydown', handleEscapeKey);
     };
-  }, [modalDivRef]);
+  }, [modalDivRef, modalOpen]);
 
   return (
-    <div
+    <div // NOSONAR
       data-testid='openModalButton'
       className='cursor-pointer'
       onClick={() => {
+        setModalOpen(!modalOpen);
+      }}
+      onKeyDown={() => {
         setModalOpen(!modalOpen);
       }}>
       {children}
@@ -50,11 +53,14 @@ export default function Modal({ modalContentComponent, hasBlur = true, isWarning
           className={`fixed z-50 left-0 top-0 cursor-default w-full h-full ${
             hasBlur ? 'backdrop-blur-sm' : ''
           } transition-opacity duration-700 ease-in-out`}>
-          <div
+          <div // NOSONAR
             data-testid='modalWindow'
             ref={modalDivRef}
             onClick={(event) => {
               event.stopPropagation(); // This prevents the modal closing on click bug.
+            }}
+            onKeyDown={(event) => {
+              event.stopPropagation();
             }}
             className={`absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2  p-8 rounded-2xl bg-white drop-shadow-2xl ${
               isWarning ? ' shadow-[0_0_30px_-10px_rgba(239,68,68,1)]' : ''

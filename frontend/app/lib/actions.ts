@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
-import { signIn, auth, signOut } from '@/auth';
+import { signIn, auth } from '@/auth';
 import { NoteFormState, Note } from '@/app/lib/types';
 import bcrypt from 'bcrypt';
 import { isRedirectError } from 'next/dist/client/components/redirect';
@@ -62,7 +62,7 @@ export async function createUpdateNote(prevState: NoteFormState | undefined, for
   let { id, title, text } = validatedFields.data;
 
   const tagEntries = Array.from(formData.entries()).filter(([name]) => name === 'tags');
-  const tags = tagEntries.map(([, value]) => value.toString());
+  const tags = tagEntries.map(([, value]) => value.toString()); // NOSONAR
 
   if (id === '') {
     // Create Note
@@ -204,11 +204,10 @@ export async function login(prevState: { message: string } | undefined, formData
     await signIn('credentials', formData);
   } catch (error) {
     if (error instanceof AuthError) {
-      switch (error.type) {
-        case 'CredentialsSignin':
-          return { message: 'Invalid credentials.' };
-        default:
-          return { message: 'Something went wrong.' };
+      if (error.type === 'CredentialsSignin') {
+        return { message: 'Invalid credentials.' };
+      } else {
+        return { message: 'Something went wrong.' };
       }
     }
     if (isRedirectError(error)) {

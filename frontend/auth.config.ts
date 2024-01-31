@@ -39,4 +39,5 @@ export const authConfig = {
       clientSecret: process.env.GOOGLE_SECRET,
     }),
   ],
+  trustHost: true,
 } satisfies NextAuthConfig;

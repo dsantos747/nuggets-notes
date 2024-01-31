@@ -1,7 +1,7 @@
 import Modal from '../ui/modal';
 import { caprasimo } from '../ui/fonts';
 import { deleteAccount } from '../lib/actions';
-import { signOut } from 'next-auth/react';
+import { signOut } from '@/auth';
 
 export default function Settings() {
   return (
@@ -21,6 +21,7 @@ export default function Settings() {
                 await signOut();
               }}>
               <button
+                data-testId='confirmDeleteAccountButton'
                 type='submit'
                 className='rounded-lg bg-red-500 items-center justify-center px-4 mt-4 h-10 mx-auto text-white disabled:bg-red-300'>
                 Delete Account
@@ -28,7 +29,9 @@ export default function Settings() {
             </form>
           </div>
         }>
-        <div className='text-white font-bold rounded-md px-4 py-2 bg-red-500 w-content'> Delete Account</div>
+        <div data-testId='deleteAccountButton' className='text-white font-bold rounded-md px-4 py-2 bg-red-500 w-content'>
+          Delete Account
+        </div>
       </Modal>
     </div>
   );

@@ -14,7 +14,7 @@ export default async function NotespaceLayout({ children }: { readonly children:
           await signOut();
         }}
         className='absolute right-6 top-4 z-10 '>
-        <button type='submit' className='hover:text-orange-800 transition-colors duration-100'>
+        <button data-testId='signOutButton' type='submit' className='hover:text-orange-800 transition-colors duration-100'>
           Sign Out
         </button>
       </form>

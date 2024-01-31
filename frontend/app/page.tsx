@@ -18,7 +18,9 @@ export default function Home() {
           <QuestionMarkCircleIcon className='absolute top-6 right-4 md:top-8 md:left-8 h-7 w-7 text-orange-900 hover:text-black'></QuestionMarkCircleIcon>
         </Modal>
       </div>
-      <div className=''>{/* <LoginForm /> */}</div>
+      <div>
+        <LoginForm />
+      </div>
       <div className='hidden md:block absolute bottom-4 right-8 text-xs text-amber-800'>
         <CreatedBy />
       </div>
